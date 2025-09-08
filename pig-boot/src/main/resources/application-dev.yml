@@ -36,3 +36,9 @@ jasypt:
 sms:
   is-print: false # 是否打印日志
   config-type: yaml # 配置类型，yaml
+
+# DeepSeek 配置（开发环境）
+deepseek:
+  apiKey: sk-4de8748b8bd84085957b446e1810ae9d
+  model: deepseek-chat
+  baseUrl: https://api.deepseek.com
