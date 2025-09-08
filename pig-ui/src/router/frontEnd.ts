@@ -120,6 +120,25 @@ export function setFilterMenuAndCacheTagsViewRoutes() {
 	setCacheTagsViewRoutes();
 }
 
+// 追加标准评估页面到基础路由（前端控制模式下也可直接访问）
+const assessRoute = {
+    path: '/assess/standard',
+    name: 'router.assess.standard',
+    component: () => import('/@/views/assess/standard/index.vue'),
+    meta: {
+        isLink: '',
+        isHide: false,
+        isKeepAlive: false,
+        isAffix: false,
+        isIframe: false,
+        icon: 'iconfont icon-menu',
+    }
+} as unknown as RouteRecordRaw;
+
+if (baseRoutes && baseRoutes.length > 0 && Array.isArray(baseRoutes[0].children)) {
+    baseRoutes[0].children.push(assessRoute);
+}
+
 /**
  * 判断路由 `meta.roles` 中是否包含当前登录用户权限字段
  * @param roles 用户权限标识，在 userInfos（用户信息）的 roles（登录页登录时缓存到浏览器）数组
