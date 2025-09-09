@@ -367,7 +367,7 @@ onUnmounted(() => {
 }
 
 .evaluation-content {
-	max-width: 1200px;
+	max-width: 1600px; /* 扩大页面内容显示宽度 */
 	margin: 0 auto;
 }
 
@@ -886,7 +886,7 @@ onUnmounted(() => {
 	
 	.markdown-result {
 		.markdown-content table {
-			font-size: 0.8rem;
+			font-size: 0.85rem;
 			min-width: 500px;
 			border: 2px solid #409eff; // 保持表格外边框
 			
