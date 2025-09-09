@@ -179,25 +179,31 @@ public class StandardEvaluationServiceImpl implements StandardEvaluationService 
      * 解析响应结果
      */
     private void parseResponse(String response, StandardEvaluationResult result) {
-        // 查找result_table和result部分
-        String[] parts = response.split("\\{result\\}");
-        if (parts.length >= 2) {
-            String tablePart = parts[0];
-            String resultPart = parts[1];
+        // 查找表格部分
+        if (response.contains("| 维度 |")) {
+            int tableStartIndex = response.indexOf("| 维度 |");
             
-            // 提取表格部分
-            if (tablePart.contains("| 维度 |")) {
-                int startIndex = tablePart.indexOf("| 维度 |");
-                int endIndex = tablePart.lastIndexOf("|");
-                if (endIndex > startIndex) {
-                    result.setResultTable(tablePart.substring(startIndex, endIndex + 1).trim());
-                }
+            // 查找表格结束位置（综合评估结论开始）
+            int tableEndIndex = response.length();
+            if (response.contains("### 综合评估结论")) {
+                tableEndIndex = response.indexOf("### 综合评估结论");
+            } else if (response.contains("- 建议：")) {
+                tableEndIndex = response.indexOf("- 建议：");
             }
             
-            // 提取结论部分
-            result.setResult(resultPart.trim());
+            // 提取表格部分
+            String tableContent = response.substring(tableStartIndex, tableEndIndex).trim();
+            result.setResultTable(tableContent);
+            
+            // 提取综合评估结论部分
+            String conclusionContent = response.substring(tableEndIndex).trim();
+            if (conclusionContent.startsWith("### 综合评估结论")) {
+                // 移除标题，只保留内容
+                conclusionContent = conclusionContent.replaceFirst("### 综合评估结论\\s*", "");
+            }
+            result.setResult(conclusionContent);
         } else {
-            // 如果没有找到分隔符，将整个响应作为结果
+            // 如果没有找到表格，将整个响应作为结果
             result.setResultTable(response);
             result.setResult("请查看详细分析结果");
         }
