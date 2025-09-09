@@ -21,6 +21,12 @@ spring:
     suffix: .ftl
     template-loader-path: classpath:/templates/
     request-context-attribute: request
+  thymeleaf: # thymeleaf 配置，标准评估页面渲染使用
+    prefix: classpath:/templates/
+    suffix: .html
+    mode: HTML
+    encoding: UTF-8
+    cache: false
   main:
     allow-bean-definition-overriding: true # 允许覆盖bean定义
   profiles:
@@ -43,11 +49,19 @@ security:
         - /error
         - /token/**
         - /actuator/**
+        - /evaluation/**  # 标准评估模块无需登录
+        - /admin/evaluation/**  # 标准评估模块无需登录（带context-path）
 
 #--------------如下配置尽量不要变动-------------
 # swagger 配置
 swagger:
   token-url: ${swagger.gateway}/admin/oauth2/token
+
+# DeepSeek API 配置
+deepseek:
+  api:
+    url: https://api.deepseek.com/v1/chat/completions
+    key: sk-4de8748b8bd84085957b446e1810ae9d  # 从环境变量获取API密钥
 
 # mybatis-plus 配置
 mybatis-plus:

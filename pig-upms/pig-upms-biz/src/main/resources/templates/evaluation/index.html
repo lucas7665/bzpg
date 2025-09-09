@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>标准评估</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 40px; }
+        .container { max-width: 600px; margin: 0 auto; }
+        input, textarea, button { width: 100%; padding: 10px; margin: 10px 0; }
+        textarea { height: 100px; }
+        button { background: #007bff; color: white; border: none; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        .result { margin-top: 20px; padding: 15px; background: #f8f9fa; border: 1px solid #dee2e6; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>标准评估系统</h1>
+        <form id="form">
+            <input type="text" id="title" placeholder="请输入标准名称，例如：元宇宙技术要求" required>
+            <button type="submit">开始评估</button>
+        </form>
+        <div id="result" class="result" style="display:none;">
+            <h3>评估结果：</h3>
+            <div id="content"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('form').onsubmit = async function(e) {
+            e.preventDefault();
+            const title = document.getElementById('title').value;
+            const resultDiv = document.getElementById('result');
+            const contentDiv = document.getElementById('content');
+            
+            contentDiv.innerHTML = '正在评估中...';
+            resultDiv.style.display = 'block';
+            
+            try {
+                const response = await fetch('/admin/evaluation/assess', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ title: title })
+                });
+                
+                const result = await response.json();
+                
+                if (result.code === 0) {
+                    contentDiv.innerHTML = `
+                        <p><strong>结论：</strong>${result.data.result || '请查看详细分析'}</p>
+                        <pre>${result.data.resultTable || '暂无详细数据'}</pre>
+                    `;
+                } else {
+                    contentDiv.innerHTML = `<p style="color: red;">错误：${result.msg}</p>`;
+                }
+            } catch (error) {
+                contentDiv.innerHTML = `<p style="color: red;">网络错误：${error.message}</p>`;
+            }
+        };
+    </script>
+</body>
+</html>
