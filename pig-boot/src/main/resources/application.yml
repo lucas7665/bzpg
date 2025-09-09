@@ -62,6 +62,12 @@ deepseek:
   api:
     url: https://api.deepseek.com/v1/chat/completions
     key: sk-4de8748b8bd84085957b446e1810ae9d  # 从环境变量获取API密钥
+    model: deepseek-chat  # 使用deepseek-chat模型（已升级至V3）
+    temperature: 0.3      # 降低随机性，提高一致性
+    max_tokens: 3000      # 减少最大token数，提高速度
+    stream: false         # 当前使用同步调用
+  prompt:
+    file: classpath:prompts/evaluation-prompt.txt  # 提示词模板文件路径
 
 # mybatis-plus 配置
 mybatis-plus:
