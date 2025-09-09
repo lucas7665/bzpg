@@ -3,7 +3,6 @@ package com.pig4cloud.pig.admin.service.impl;
 import com.pig4cloud.pig.admin.dto.StandardEvaluationRequest;
 import com.pig4cloud.pig.admin.dto.StandardEvaluationResult;
 import com.pig4cloud.pig.admin.service.StandardEvaluationService;
-import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -254,12 +253,14 @@ public class StandardEvaluationServiceImpl implements StandardEvaluationService 
         ResponseEntity<Map> response = restTemplate.postForEntity(deepSeekApiUrl, entity, Map.class);
         
         if (response.getStatusCode() == HttpStatus.OK && response.getBody() != null) {
-            Map<String, Object> responseBody = response.getBody();
+            @SuppressWarnings("unchecked")
+            Map<String, Object> responseBody = (Map<String, Object>) response.getBody();
             if (responseBody.containsKey("choices")) {
-                Object[] choices = (Object[]) responseBody.get("choices");
-                if (choices.length > 0) {
+                @SuppressWarnings("unchecked")
+                java.util.List<Object> choicesList = (java.util.List<Object>) responseBody.get("choices");
+                if (!choicesList.isEmpty()) {
                     @SuppressWarnings("unchecked")
-                    Map<String, Object> choice = (Map<String, Object>) choices[0];
+                    Map<String, Object> choice = (Map<String, Object>) choicesList.get(0);
                     @SuppressWarnings("unchecked")
                     Map<String, Object> message = (Map<String, Object>) choice.get("message");
                     return (String) message.get("content");
