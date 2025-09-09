@@ -31,7 +31,8 @@ public class DeepSeekConfig {
 
     @Data
     public static class Prompt {
-        private String file = "classpath:prompts/evaluation-prompt.txt";
+        private String file = "classpath:prompts/evaluation-prompt.txt";  // 详细模式
+        private String fastFile = "classpath:prompts/evaluation-prompt-fast.txt";  // 快速模式
     }
 
     /**
@@ -43,9 +44,9 @@ public class DeepSeekConfig {
         fastConfig.setKey(this.api.key);
         fastConfig.setModel("deepseek-chat"); // 使用deepseek-chat模型（已升级至V3）
         fastConfig.setTemperature(0.1);       // 最低随机性
-        fastConfig.setMaxTokens(2000);        // 减少token数
+        fastConfig.setMaxTokens(1500);        // 进一步减少token数
         fastConfig.setStream(false);
-        fastConfig.setTimeout(60000);         // 1分钟超时
+        fastConfig.setTimeout(45000);         // 45秒超时
         return fastConfig;
     }
 

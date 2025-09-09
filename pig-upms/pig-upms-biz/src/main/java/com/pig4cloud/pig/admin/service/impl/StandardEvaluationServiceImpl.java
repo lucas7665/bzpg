@@ -35,17 +35,20 @@ public class StandardEvaluationServiceImpl implements StandardEvaluationService 
     @Value("${deepseek.prompt.file:classpath:prompts/evaluation-prompt.txt}")
     private String promptFilePath;
 
+    @Value("${deepseek.prompt.fast_file:classpath:prompts/evaluation-prompt-fast.txt}")
+    private String fastPromptFilePath;
+
 
     @Override
     public StandardEvaluationResult evaluateStandard(StandardEvaluationRequest request) {
         StandardEvaluationResult result = new StandardEvaluationResult();
         
         try {
-            // 构建prompt
-            String prompt = buildPrompt(request.getTitle());
+            // 构建prompt（使用详细模式）
+            String prompt = buildPrompt(request.getTitle(),false);
             
-            // 调用DeepSeek API
-            String response = callDeepSeekApi(prompt);
+            // 调用DeepSeek API（使用详细模式）
+            String response = callDeepSeekApi(prompt, false);
             
             // 解析响应结果
             parseResponse(response, result);
@@ -65,8 +68,15 @@ public class StandardEvaluationServiceImpl implements StandardEvaluationService 
      * 构建prompt
      */
     private String buildPrompt(String title) {
+        return buildPrompt(title, false);
+    }
+
+    /**
+     * 构建prompt（支持快速模式）
+     */
+    private String buildPrompt(String title, boolean fastMode) {
         try {
-            String promptTemplate = loadPromptTemplate();
+            String promptTemplate = loadPromptTemplate(fastMode);
             return promptTemplate.replace("{TITLE}", title);
         } catch (Exception e) {
             log.error("加载提示词模板失败，使用默认模板", e);
@@ -78,14 +88,23 @@ public class StandardEvaluationServiceImpl implements StandardEvaluationService 
      * 加载提示词模板
      */
     private String loadPromptTemplate() throws IOException {
-        if (promptFilePath.startsWith("classpath:")) {
-            String resourcePath = promptFilePath.substring("classpath:".length());
+        return loadPromptTemplate(false);
+    }
+
+    /**
+     * 加载提示词模板（支持快速模式）
+     */
+    private String loadPromptTemplate(boolean fastMode) throws IOException {
+        String filePath = fastMode ? fastPromptFilePath : promptFilePath;
+        
+        if (filePath.startsWith("classpath:")) {
+            String resourcePath = filePath.substring("classpath:".length());
             return new String(
                 this.getClass().getClassLoader().getResourceAsStream(resourcePath).readAllBytes(),
                 StandardCharsets.UTF_8
             );
         } else {
-            return Files.readString(Paths.get(promptFilePath), StandardCharsets.UTF_8);
+            return Files.readString(Paths.get(filePath), StandardCharsets.UTF_8);
         }
     }
 
