@@ -102,6 +102,7 @@ import { ElMessage, ElMessageBox } from 'element-plus';
 import { ArrowDown, ArrowUp } from '@element-plus/icons-vue';
 import { assessStandard, type StandardEvaluationRequest, type StandardEvaluationResult } from '/@/api/evaluation';
 import { marked } from 'marked';
+import Watermark from '/@/utils/wartermark';
 
 // 表单数据
 const evaluationForm = reactive<StandardEvaluationRequest>({
@@ -281,6 +282,9 @@ const renderMarkdown = (markdown: string) => {
 
 // 生命周期钩子
 onMounted(() => {
+	// 强制删除水印
+	Watermark.del();
+	
 	// 计算初始表格高度
 	calculateTableHeight();
 	
@@ -605,6 +609,7 @@ onUnmounted(() => {
 			min-width: 800px;
 			border-collapse: collapse;
 			margin: 20px 0;
+			border: 2px solid #409eff; // 表格外边框
 			
 			thead tr {
 				background-color: #409eff;
@@ -624,17 +629,43 @@ onUnmounted(() => {
 			
 			th, td {
 				padding: 12px 8px;
-				border: 1px solid #e4e7ed;
+				border: 1px solid #d9d9d9; // 更明显的单元格边框
 				text-align: left;
 				vertical-align: top;
 				line-height: 1.5;
 				font-size: 14px;
 			}
 			
+			// 表头边框
+			th {
+				border-bottom: 2px solid #409eff; // 表头底部加粗边框
+				border-right: 1px solid #d9d9d9;
+				
+				&:last-child {
+					border-right: none;
+				}
+			}
+			
+			// 表格行边框
+			tr {
+				border-bottom: 1px solid #d9d9d9; // 更明显的行分隔线
+				
+				&:last-child {
+					border-bottom: 2px solid #409eff; // 最后一行底部加粗边框
+				}
+			}
+			
 			td {
+				border-right: 1px solid #d9d9d9;
+				
+				&:last-child {
+					border-right: none;
+				}
+				
 				&:nth-child(1) {
 					min-width: 80px;
 					font-weight: 500;
+					border-right: 2px solid #409eff; // 第一列右边加粗边框
 				}
 				
 				&:nth-child(2) {
@@ -760,16 +791,29 @@ onUnmounted(() => {
 		max-width: 100%;
 	}
 	
-	.result-table {
-		.markdown-content .evaluation-table {
+	.markdown-result {
+		.markdown-content table {
 			font-size: 0.9rem;
 			min-width: 600px; /* 移动端最小宽度 */
+			border: 2px solid #409eff; // 保持表格外边框
+			
+			th, td {
+				padding: 8px 10px;
+				border: 1px solid #d9d9d9; // 保持单元格边框
+			}
+			
+			th {
+				border-bottom: 2px solid #409eff; // 保持表头底部加粗边框
+			}
+			
+			tr {
+				border-bottom: 1px solid #d9d9d9; // 保持行分隔线
+			}
 			
 			td {
-				padding: 8px 10px;
-				
 				&:first-child {
 					min-width: 60px; /* 移动端减少第一列宽度 */
+					border-right: 2px solid #409eff; // 保持第一列右边加粗边框
 				}
 				
 				&:nth-child(2) {
@@ -821,13 +865,27 @@ onUnmounted(() => {
 		scrollbar-color: rgba(255, 255, 255, 0.8) rgba(255, 255, 255, 0.4);
 	}
 	
-	.result-table {
-		.markdown-content .evaluation-table {
+	.markdown-result {
+		.markdown-content table {
 			font-size: 0.8rem;
 			min-width: 500px;
+			border: 2px solid #409eff; // 保持表格外边框
 			
-			td {
+			th, td {
 				padding: 6px 8px;
+				border: 1px solid #d9d9d9; // 保持单元格边框
+			}
+			
+			th {
+				border-bottom: 2px solid #409eff; // 保持表头底部加粗边框
+			}
+			
+			tr {
+				border-bottom: 1px solid #d9d9d9; // 保持行分隔线
+			}
+			
+			td:first-child {
+				border-right: 2px solid #409eff; // 保持第一列右边加粗边框
 			}
 		}
 	}

@@ -676,8 +676,10 @@ onMounted(() => {
 			if (getThemeConfig.value.isInvert) onAddFilterChange('invert');
 			// 深色模式
 			if (getThemeConfig.value.isIsDark) onAddDarkChange();
-			// 开启水印
-			onWartermarkChange();
+			// 强制关闭水印
+			getThemeConfig.value.isWartermark = false;
+			Watermark.del();
+			setLocalThemeConfig();
 			// 语言国际化
 			if (Local.get('themeConfig')) locale.value = Local.get('themeConfig').globalI18n;
 			// 初始化菜单样式等

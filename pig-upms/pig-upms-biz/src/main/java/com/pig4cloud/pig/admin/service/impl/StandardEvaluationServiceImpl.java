@@ -182,5 +182,6 @@ public class StandardEvaluationServiceImpl implements StandardEvaluationService 
         // 直接返回原始markdown内容，让前端处理
         result.setResultTable(response);
         result.setResult("SUCCESS");
+		log.info(response);
     }
 }

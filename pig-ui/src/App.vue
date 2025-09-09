@@ -60,7 +60,10 @@ onMounted(() => {
 		});
 		// 获取缓存中的布局配置
 		if (Local.get('themeConfig')) {
-			storesThemeConfig.setThemeConfig({ themeConfig: Local.get('themeConfig') });
+			const cachedConfig = Local.get('themeConfig');
+			// 强制关闭水印
+			cachedConfig.isWartermark = false;
+			storesThemeConfig.setThemeConfig({ themeConfig: cachedConfig });
 			document.documentElement.style.cssText = Local.get('themeConfigStyle');
 		}
 		// 获取缓存中的全屏配置
