@@ -695,6 +695,21 @@ onUnmounted(() => {
 			tr:hover {
 				background-color: #f0f9ff;
 			}
+			
+			/* 行分隔线加强：为每一行底部增加更清晰的分割线 */
+			tbody tr:not(:last-child) td {
+				border-bottom: 1.5px solid #cfd8dc;
+			}
+		}
+
+		/* 保障边框样式对 v-html 渲染内容强制生效（避免被全局样式覆盖） */
+		:deep(table) {
+			border-collapse: collapse !important;
+			border: 2px solid #409eff !important;
+		}
+		:deep(th),
+		:deep(td) {
+			border: 1px solid #d9d9d9 !important;
 		}
 		
 		// 标题样式
@@ -809,6 +824,10 @@ onUnmounted(() => {
 			tr {
 				border-bottom: 1px solid #d9d9d9; // 保持行分隔线
 			}
+			/* 行分隔线加强（移动端） */
+			tbody tr:not(:last-child) td {
+				border-bottom: 1.5px solid #cfd8dc;
+			}
 			
 			td {
 				&:first-child {
@@ -882,6 +901,10 @@ onUnmounted(() => {
 			
 			tr {
 				border-bottom: 1px solid #d9d9d9; // 保持行分隔线
+			}
+			/* 行分隔线加强（超小屏幕） */
+			tbody tr:not(:last-child) td {
+				border-bottom: 1.5px solid #cfd8dc;
 			}
 			
 			td:first-child {
