@@ -9,7 +9,7 @@ import other from './other';
  */
 const service: AxiosInstance = axios.create({
 	baseURL: import.meta.env.VITE_API_URL,
-	timeout: 50000, // 全局超时时间
+	timeout: 120000, // 全局超时时间（2分钟）
     paramsSerializer: {
         serialize: (params: any) => {
             return qs.stringify(params, {arrayFormat: 'repeat'});

@@ -69,6 +69,15 @@ export const staticRoutes: Array<RouteRecordRaw> = [
 		meta: {
 			isAuth: false,
 		},
+	},
+	{
+		path: '/evaluation',
+		name: 'staticRoutes.evaluation',
+		component: () => import('/@/views/evaluation/index.vue'),
+		meta: {
+			isAuth: false, // 无需登录
+			isHide: false,
+		},
 	}
 ];
 
