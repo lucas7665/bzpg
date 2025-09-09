@@ -55,33 +55,19 @@
 					</template>
 					
 					<div v-if="evaluationResult && evaluationResult.status === 'SUCCESS'">
-						<!-- 评估表格 -->
-						<div class="result-table" v-if="evaluationResult && evaluationResult.resultTable">
-							<h3>详细评估分析</h3>
+						<!-- Markdown内容展示 -->
+						<div class="markdown-result" v-if="evaluationResult && evaluationResult.resultTable">
 							<div 
-								class="table-container" 
-								ref="tableContainer" 
+								class="markdown-container" 
+								ref="markdownContainer" 
 								@scroll="handleScroll"
 								:style="{ maxHeight: tableMaxHeight }"
 							>
-								<div class="markdown-content" v-html="formatMarkdownTable(evaluationResult.resultTable)"></div>
+								<div class="markdown-content" v-html="renderMarkdown(evaluationResult.resultTable)"></div>
 								<div class="scroll-hint" v-if="showScrollHint">
 									<el-icon><ArrowDown /></el-icon>
 									<span>向下滚动查看更多内容</span>
 								</div>
-							</div>
-						</div>
-						
-						<!-- 综合结论 -->
-						<div class="result-conclusion" v-if="evaluationResult && evaluationResult.result">
-							<h3>综合评估结论</h3>
-							<div class="conclusion-content">
-								<el-alert
-									:title="evaluationResult?.result"
-									type="info"
-									:closable="false"
-									show-icon
-								/>
 							</div>
 						</div>
 					</div>
@@ -115,6 +101,7 @@ import { ref, reactive, computed, nextTick, onMounted, onUnmounted } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
 import { ArrowDown, ArrowUp } from '@element-plus/icons-vue';
 import { assessStandard, type StandardEvaluationRequest, type StandardEvaluationResult } from '/@/api/evaluation';
+import { marked } from 'marked';
 
 // 表单数据
 const evaluationForm = reactive<StandardEvaluationRequest>({
@@ -138,8 +125,8 @@ const loading = ref(false);
 // 评估结果
 const evaluationResult = ref<StandardEvaluationResult | null>(null);
 
-// 表格容器引用
-const tableContainer = ref<HTMLElement | null>(null);
+// Markdown容器引用
+const markdownContainer = ref<HTMLElement | null>(null);
 
 // 滚动提示显示状态
 const showScrollHint = ref(false);
@@ -255,9 +242,9 @@ const calculateTableHeight = () => {
 
 // 检查是否需要显示滚动提示
 const checkScrollHint = () => {
-	if (!tableContainer.value) return;
+	if (!markdownContainer.value) return;
 	
-	const container = tableContainer.value;
+	const container = markdownContainer.value;
 	const hasVerticalScroll = container.scrollHeight > container.clientHeight;
 	const hasHorizontalScroll = container.scrollWidth > container.clientWidth;
 	
@@ -266,9 +253,9 @@ const checkScrollHint = () => {
 
 // 滚动事件处理
 const handleScroll = () => {
-	if (!tableContainer.value) return;
+	if (!markdownContainer.value) return;
 	
-	const container = tableContainer.value;
+	const container = markdownContainer.value;
 	const scrollTop = container.scrollTop;
 	const scrollLeft = container.scrollLeft;
 	
@@ -278,22 +265,18 @@ const handleScroll = () => {
 	}
 };
 
-// 格式化Markdown表格
-const formatMarkdownTable = (markdown: string) => {
+// 渲染Markdown内容
+const renderMarkdown = (markdown: string) => {
 	if (!markdown) return '';
 	
-	// 简单的Markdown表格转HTML
-	return markdown
-		.replace(/\|/g, '</td><td>')
-		.replace(/^<td>/, '<td>')
-		.replace(/<td>$/, '</td>')
-		.replace(/\n/g, '</tr><tr>')
-		.replace(/^/, '<table class="evaluation-table"><tr>')
-		.replace(/$/, '</tr></table>')
-		.replace(/<td><\/td>/g, '<td>&nbsp;</td>')
-		.replace(/<tr><td><\/td><\/tr>/g, '')
-		.replace(/<tr><td>([^<]+)<\/td><td>([^<]+)<\/td><td>([^<]+)<\/td><td>([^<]+)<\/td><td>([^<]+)<\/td><\/tr>/g, 
-			'<tr><td>$1</td><td>$2</td><td>$3</td><td>$4</td><td>$5</td></tr>');
+	// 配置marked选项
+	marked.setOptions({
+		breaks: true, // 支持换行
+		gfm: true, // 支持GitHub风格的Markdown
+	});
+	
+	// 解析markdown为HTML
+	return marked(markdown);
 };
 
 // 生命周期钩子
@@ -553,6 +536,168 @@ onUnmounted(() => {
 					word-break: break-word;
 				}
 			}
+		}
+	}
+}
+
+.markdown-result {
+	margin-bottom: 30px;
+	
+	.markdown-container {
+		overflow-y: auto;
+		border: 1px solid #dcdfe6;
+		border-radius: 8px;
+		background: #fff;
+		position: relative;
+		
+		/* 自定义滚动条样式 */
+		&::-webkit-scrollbar {
+			width: 8px;
+			height: 8px;
+		}
+		
+		&::-webkit-scrollbar-track {
+			background: #f1f1f1;
+			border-radius: 4px;
+		}
+		
+		&::-webkit-scrollbar-thumb {
+			background: #c1c1c1;
+			border-radius: 4px;
+			
+			&:hover {
+				background: #a8a8a8;
+			}
+		}
+		
+		&::-webkit-scrollbar-corner {
+			background: #f1f1f1;
+		}
+	}
+	
+	.scroll-hint {
+		position: absolute;
+		bottom: 10px;
+		right: 10px;
+		background: rgba(64, 158, 255, 0.9);
+		color: white;
+		padding: 8px 12px;
+		border-radius: 20px;
+		font-size: 12px;
+		display: flex;
+		align-items: center;
+		gap: 4px;
+		animation: bounce 2s infinite;
+		z-index: 20;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+		
+		.el-icon {
+			font-size: 14px;
+		}
+	}
+	
+	.markdown-content {
+		padding: 20px;
+		
+		// 表格样式
+		table {
+			width: 100%;
+			min-width: 800px;
+			border-collapse: collapse;
+			margin: 20px 0;
+			
+			thead tr {
+				background-color: #409eff;
+				color: white;
+				font-weight: 600;
+				position: sticky;
+				top: 0;
+				z-index: 10;
+			}
+			
+			tbody tr:first-child td:first-child {
+				position: sticky;
+				left: 0;
+				background: #f5f7fa;
+				z-index: 5;
+			}
+			
+			th, td {
+				padding: 12px 8px;
+				border: 1px solid #e4e7ed;
+				text-align: left;
+				vertical-align: top;
+				line-height: 1.5;
+				font-size: 14px;
+			}
+			
+			td {
+				&:nth-child(1) {
+					min-width: 80px;
+					font-weight: 500;
+				}
+				
+				&:nth-child(2) {
+					min-width: 120px;
+				}
+				
+				&:nth-child(3) {
+					min-width: 200px;
+					white-space: normal;
+				}
+				
+				&:nth-child(4) {
+					min-width: 150px;
+					font-weight: 500;
+				}
+				
+				&:nth-child(5) {
+					min-width: 200px;
+					white-space: normal;
+				}
+			}
+			
+			tr:nth-child(even) {
+				background-color: #f8f9fa;
+			}
+			
+			tr:hover {
+				background-color: #f0f9ff;
+			}
+		}
+		
+		// 标题样式
+		h3 {
+			color: #409eff;
+			margin: 30px 0 15px 0;
+			font-size: 18px;
+			font-weight: 600;
+			border-bottom: 2px solid #409eff;
+			padding-bottom: 8px;
+		}
+		
+		// 列表样式
+		ul {
+			margin: 15px 0;
+			padding-left: 20px;
+			
+			li {
+				margin: 8px 0;
+				line-height: 1.6;
+			}
+		}
+		
+		// 段落样式
+		p {
+			margin: 10px 0;
+			line-height: 1.6;
+			color: #333;
+		}
+		
+		// 强调样式
+		strong {
+			color: #409eff;
+			font-weight: 600;
 		}
 	}
 }

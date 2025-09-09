@@ -179,33 +179,8 @@ public class StandardEvaluationServiceImpl implements StandardEvaluationService 
      * 解析响应结果
      */
     private void parseResponse(String response, StandardEvaluationResult result) {
-        // 查找表格部分
-        if (response.contains("| 维度 |")) {
-            int tableStartIndex = response.indexOf("| 维度 |");
-            
-            // 查找表格结束位置（综合评估结论开始）
-            int tableEndIndex = response.length();
-            if (response.contains("### 综合评估结论")) {
-                tableEndIndex = response.indexOf("### 综合评估结论");
-            } else if (response.contains("- 建议：")) {
-                tableEndIndex = response.indexOf("- 建议：");
-            }
-            
-            // 提取表格部分
-            String tableContent = response.substring(tableStartIndex, tableEndIndex).trim();
-            result.setResultTable(tableContent);
-            
-            // 提取综合评估结论部分
-            String conclusionContent = response.substring(tableEndIndex).trim();
-            if (conclusionContent.startsWith("### 综合评估结论")) {
-                // 移除标题，只保留内容
-                conclusionContent = conclusionContent.replaceFirst("### 综合评估结论\\s*", "");
-            }
-            result.setResult(conclusionContent);
-        } else {
-            // 如果没有找到表格，将整个响应作为结果
-            result.setResultTable(response);
-            result.setResult("请查看详细分析结果");
-        }
+        // 直接返回原始markdown内容，让前端处理
+        result.setResultTable(response);
+        result.setResult("SUCCESS");
     }
 }
