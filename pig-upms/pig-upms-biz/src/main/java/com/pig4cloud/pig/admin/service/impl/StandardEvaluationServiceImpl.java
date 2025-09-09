@@ -6,6 +6,7 @@ import com.pig4cloud.pig.admin.service.StandardEvaluationService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
+import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -31,7 +32,10 @@ public class StandardEvaluationServiceImpl implements StandardEvaluationService 
     private String deepSeekApiKey;
 
     public StandardEvaluationServiceImpl() {
-        this.restTemplate = new RestTemplate();
+        SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
+        factory.setConnectTimeout(10000); // 连接超时10秒
+        factory.setReadTimeout(120000);   // 读取超时2分钟
+        this.restTemplate = new RestTemplate(factory);
     }
 
     @Override
