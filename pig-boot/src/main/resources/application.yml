@@ -59,6 +59,8 @@ swagger:
 
 # DeepSeek API 配置
 deepseek:
+  # 是否使用测试数据（默认为true，即使用测试数据而不调用API）
+  use_mock_data: true
   api:
     url: https://api.deepseek.com/v1/chat/completions
     key: sk-4de8748b8bd84085957b446e1810ae9d  # 从环境变量获取API密钥
