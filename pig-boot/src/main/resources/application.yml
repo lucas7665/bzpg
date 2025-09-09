@@ -66,6 +66,7 @@ deepseek:
     temperature: 0.2      # 降低随机性，提高一致性
     max_tokens: 3000      # 保持足够长度以支持详细表格
     stream: false         # 当前使用同步调用
+    timeout: 300000       # 5分钟超时
   prompt:
     #file: classpath:prompts/evaluation-prompt.txt  # 详细模式提示词（默认）
     file: classpath:prompts/evaluation-prompt-fast.txt  # 快速模式提示词

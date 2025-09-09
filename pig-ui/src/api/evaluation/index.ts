@@ -27,7 +27,7 @@ export function assessStandard(data: StandardEvaluationRequest) {
 		url: '/admin/evaluation/assess',
 		method: 'post',
 		data: data,
-		timeout: 120000, // 2分钟超时
+		timeout: 300000, // 5分钟超时
 		headers: {
 			skipToken: true, // 跳过token验证
 		},

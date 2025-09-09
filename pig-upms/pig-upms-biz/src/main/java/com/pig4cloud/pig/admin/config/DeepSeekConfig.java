@@ -26,7 +26,7 @@ public class DeepSeekConfig {
         private Double temperature = 0.3;
         private Integer maxTokens = 3000;
         private Boolean stream = false;
-        private Integer timeout = 120000; // 2分钟超时
+        private Integer timeout = 300000; // 5分钟超时
     }
 
     @Data

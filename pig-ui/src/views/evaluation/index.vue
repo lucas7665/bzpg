@@ -367,7 +367,7 @@ onUnmounted(() => {
 }
 
 .evaluation-content {
-	max-width: 1600px; /* 扩大页面内容显示宽度 */
+	max-width: 1400px; /* 扩大页面内容显示宽度 */
 	margin: 0 auto;
 }
 
