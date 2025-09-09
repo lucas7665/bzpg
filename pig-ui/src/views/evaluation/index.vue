@@ -58,7 +58,18 @@
 						<!-- 评估表格 -->
 						<div class="result-table" v-if="evaluationResult && evaluationResult.resultTable">
 							<h3>详细评估分析</h3>
-							<div class="markdown-content" v-html="formatMarkdownTable(evaluationResult.resultTable)"></div>
+							<div 
+								class="table-container" 
+								ref="tableContainer" 
+								@scroll="handleScroll"
+								:style="{ maxHeight: tableMaxHeight }"
+							>
+								<div class="markdown-content" v-html="formatMarkdownTable(evaluationResult.resultTable)"></div>
+								<div class="scroll-hint" v-if="showScrollHint">
+									<el-icon><ArrowDown /></el-icon>
+									<span>向下滚动查看更多内容</span>
+								</div>
+							</div>
 						</div>
 						
 						<!-- 综合结论 -->
@@ -86,12 +97,23 @@
 				</el-card>
 			</div>
 		</div>
+		
+		<!-- 回到顶部按钮 -->
+		<el-backtop 
+			:right="40" 
+			:bottom="40"
+			:visibility-height="200"
+			class="back-to-top"
+		>
+			<el-icon><ArrowUp /></el-icon>
+		</el-backtop>
 	</div>
 </template>
 
 <script setup lang="ts" name="StandardEvaluation">
-import { ref, reactive, computed } from 'vue';
+import { ref, reactive, computed, nextTick, onMounted, onUnmounted } from 'vue';
 import { ElMessage, ElMessageBox } from 'element-plus';
+import { ArrowDown, ArrowUp } from '@element-plus/icons-vue';
 import { assessStandard, type StandardEvaluationRequest, type StandardEvaluationResult } from '/@/api/evaluation';
 
 // 表单数据
@@ -115,6 +137,15 @@ const loading = ref(false);
 
 // 评估结果
 const evaluationResult = ref<StandardEvaluationResult | null>(null);
+
+// 表格容器引用
+const tableContainer = ref<HTMLElement | null>(null);
+
+// 滚动提示显示状态
+const showScrollHint = ref(false);
+
+// 动态计算表格高度
+const tableMaxHeight = ref('calc(100vh - 300px)');
 
 // 结果状态类型
 const resultStatusType = computed(() => {
@@ -145,6 +176,12 @@ const submitEvaluation = async () => {
 		if (result && result.code === 0) {
 			evaluationResult.value = result.data || {};
 			ElMessage.success('评估完成');
+			
+			// 等待DOM更新后检查滚动提示
+			await nextTick();
+			setTimeout(() => {
+				checkScrollHint();
+			}, 100);
 		} else {
 			ElMessage.error(result?.msg || '评估失败');
 		}
@@ -180,8 +217,64 @@ const submitEvaluation = async () => {
 const resetForm = () => {
 	evaluationForm.title = '';
 	evaluationResult.value = null;
+	showScrollHint.value = false;
 	if (evaluationFormRef.value) {
 		evaluationFormRef.value.resetFields();
+	}
+};
+
+// 动态计算表格高度
+const calculateTableHeight = () => {
+	const windowHeight = window.innerHeight;
+	const windowWidth = window.innerWidth;
+	
+	// 根据屏幕尺寸调整参数
+	let taskbarHeight = 60; // 默认任务栏高度
+	let headerHeight = 120; // 页面头部高度
+	let padding = 40; // 额外边距
+	
+	// 移动端调整
+	if (windowWidth <= 768) {
+		taskbarHeight = 40;
+		headerHeight = 100;
+		padding = 30;
+	}
+	
+	// 超小屏幕调整
+	if (windowWidth <= 480) {
+		taskbarHeight = 30;
+		headerHeight = 80;
+		padding = 20;
+	}
+	
+	const availableHeight = windowHeight - taskbarHeight - headerHeight - padding;
+	const minHeight = windowWidth <= 480 ? 250 : windowWidth <= 768 ? 300 : 400;
+	
+	tableMaxHeight.value = `${Math.max(minHeight, availableHeight)}px`;
+};
+
+// 检查是否需要显示滚动提示
+const checkScrollHint = () => {
+	if (!tableContainer.value) return;
+	
+	const container = tableContainer.value;
+	const hasVerticalScroll = container.scrollHeight > container.clientHeight;
+	const hasHorizontalScroll = container.scrollWidth > container.clientWidth;
+	
+	showScrollHint.value = hasVerticalScroll || hasHorizontalScroll;
+};
+
+// 滚动事件处理
+const handleScroll = () => {
+	if (!tableContainer.value) return;
+	
+	const container = tableContainer.value;
+	const scrollTop = container.scrollTop;
+	const scrollLeft = container.scrollLeft;
+	
+	// 如果已经滚动了一定距离，隐藏提示
+	if (scrollTop > 50 || scrollLeft > 50) {
+		showScrollHint.value = false;
 	}
 };
 
@@ -202,6 +295,24 @@ const formatMarkdownTable = (markdown: string) => {
 		.replace(/<tr><td>([^<]+)<\/td><td>([^<]+)<\/td><td>([^<]+)<\/td><td>([^<]+)<\/td><td>([^<]+)<\/td><\/tr>/g, 
 			'<tr><td>$1</td><td>$2</td><td>$3</td><td>$4</td><td>$5</td></tr>');
 };
+
+// 生命周期钩子
+onMounted(() => {
+	// 计算初始表格高度
+	calculateTableHeight();
+	
+	// 监听窗口大小变化
+	window.addEventListener('resize', () => {
+		calculateTableHeight();
+		checkScrollHint();
+	});
+});
+
+onUnmounted(() => {
+	// 清理事件监听
+	window.removeEventListener('resize', calculateTableHeight);
+	window.removeEventListener('resize', checkScrollHint);
+});
 </script>
 
 <style scoped lang="scss">
@@ -209,6 +320,46 @@ const formatMarkdownTable = (markdown: string) => {
 	min-height: 100vh;
 	background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 	padding: 20px;
+	padding-bottom: 80px; /* 添加底部安全区域 */
+	overflow-y: auto;
+	scroll-behavior: smooth;
+	height: 100vh; /* 设置固定高度确保滚动条生效 */
+	
+	/* 自定义页面滚动条样式 */
+	&::-webkit-scrollbar {
+		width: 12px;
+	}
+	
+	&::-webkit-scrollbar-track {
+		background: rgba(255, 255, 255, 0.2);
+		border-radius: 6px;
+		margin: 4px;
+	}
+	
+	&::-webkit-scrollbar-thumb {
+		background: rgba(255, 255, 255, 0.6);
+		border-radius: 6px;
+		border: 2px solid transparent;
+		background-clip: content-box;
+		
+		&:hover {
+			background: rgba(255, 255, 255, 0.8);
+			background-clip: content-box;
+		}
+		
+		&:active {
+			background: rgba(255, 255, 255, 0.9);
+			background-clip: content-box;
+		}
+	}
+	
+	&::-webkit-scrollbar-corner {
+		background: rgba(255, 255, 255, 0.1);
+	}
+	
+	/* Firefox 滚动条样式 */
+	scrollbar-width: thin;
+	scrollbar-color: rgba(255, 255, 255, 0.6) rgba(255, 255, 255, 0.2);
 }
 
 .evaluation-header {
@@ -274,15 +425,81 @@ const formatMarkdownTable = (markdown: string) => {
 		font-size: 1.2rem;
 	}
 	
+	.table-container {
+		overflow-y: auto;
+		border: 1px solid #dcdfe6;
+		border-radius: 8px;
+		background: #fff;
+		position: relative;
+		
+		/* 自定义滚动条样式 */
+		&::-webkit-scrollbar {
+			width: 8px;
+			height: 8px;
+		}
+		
+		&::-webkit-scrollbar-track {
+			background: #f1f1f1;
+			border-radius: 4px;
+		}
+		
+		&::-webkit-scrollbar-thumb {
+			background: #c1c1c1;
+			border-radius: 4px;
+			
+			&:hover {
+				background: #a8a8a8;
+			}
+		}
+		
+		&::-webkit-scrollbar-corner {
+			background: #f1f1f1;
+		}
+	}
+	
+	.scroll-hint {
+		position: absolute;
+		bottom: 10px;
+		right: 10px;
+		background: rgba(64, 158, 255, 0.9);
+		color: white;
+		padding: 8px 12px;
+		border-radius: 20px;
+		font-size: 12px;
+		display: flex;
+		align-items: center;
+		gap: 4px;
+		animation: bounce 2s infinite;
+		z-index: 20;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+		
+		.el-icon {
+			font-size: 14px;
+		}
+	}
+	
+	@keyframes bounce {
+		0%, 20%, 50%, 80%, 100% {
+			transform: translateY(0);
+		}
+		40% {
+			transform: translateY(-5px);
+		}
+		60% {
+			transform: translateY(-3px);
+		}
+	}
+	
 	.markdown-content {
 		overflow-x: auto;
+		min-width: 100%;
 		
 		.evaluation-table {
 			width: 100%;
+			min-width: 800px; /* 确保表格有最小宽度 */
 			border-collapse: collapse;
-			border: 1px solid #dcdfe6;
-			border-radius: 6px;
-			overflow: hidden;
+			border: none;
+			margin: 0;
 			
 			tr {
 				&:nth-child(even) {
@@ -293,6 +510,9 @@ const formatMarkdownTable = (markdown: string) => {
 					background-color: #409eff;
 					color: white;
 					font-weight: 600;
+					position: sticky;
+					top: 0;
+					z-index: 10;
 				}
 			}
 			
@@ -302,10 +522,35 @@ const formatMarkdownTable = (markdown: string) => {
 				text-align: left;
 				vertical-align: top;
 				line-height: 1.5;
+				white-space: nowrap;
 				
 				&:first-child {
 					font-weight: 600;
 					background-color: #f5f7fa;
+					position: sticky;
+					left: 0;
+					z-index: 5;
+					min-width: 80px;
+				}
+				
+				&:nth-child(2) {
+					min-width: 120px;
+				}
+				
+				&:nth-child(3) {
+					min-width: 200px;
+					white-space: normal;
+					word-break: break-word;
+				}
+				
+				&:nth-child(4) {
+					min-width: 100px;
+				}
+				
+				&:nth-child(5) {
+					min-width: 150px;
+					white-space: normal;
+					word-break: break-word;
 				}
 			}
 		}
@@ -336,6 +581,30 @@ const formatMarkdownTable = (markdown: string) => {
 @media (max-width: 768px) {
 	.evaluation-container {
 		padding: 10px;
+		padding-bottom: 60px; /* 移动端底部安全区域 */
+		
+		/* 移动端滚动条样式 */
+		&::-webkit-scrollbar {
+			width: 8px;
+		}
+		
+		&::-webkit-scrollbar-track {
+			background: rgba(255, 255, 255, 0.3);
+			border-radius: 4px;
+		}
+		
+		&::-webkit-scrollbar-thumb {
+			background: rgba(255, 255, 255, 0.7);
+			border-radius: 4px;
+			
+			&:hover {
+				background: rgba(255, 255, 255, 0.9);
+			}
+		}
+		
+		/* Firefox 移动端滚动条 */
+		scrollbar-width: thin;
+		scrollbar-color: rgba(255, 255, 255, 0.7) rgba(255, 255, 255, 0.3);
 	}
 	
 	.evaluation-header h1 {
@@ -346,11 +615,96 @@ const formatMarkdownTable = (markdown: string) => {
 		max-width: 100%;
 	}
 	
-	.result-table .markdown-content .evaluation-table {
-		font-size: 0.9rem;
+	.result-table {
+		.markdown-content .evaluation-table {
+			font-size: 0.9rem;
+			min-width: 600px; /* 移动端最小宽度 */
+			
+			td {
+				padding: 8px 10px;
+				
+				&:first-child {
+					min-width: 60px; /* 移动端减少第一列宽度 */
+				}
+				
+				&:nth-child(2) {
+					min-width: 80px;
+				}
+				
+				&:nth-child(3) {
+					min-width: 150px;
+				}
+				
+				&:nth-child(4) {
+					min-width: 80px;
+				}
+				
+				&:nth-child(5) {
+					min-width: 120px;
+				}
+			}
+		}
+	}
+}
+
+// 超小屏幕优化
+@media (max-width: 480px) {
+	.evaluation-container {
+		padding-bottom: 50px; /* 超小屏幕底部安全区域 */
 		
-		td {
-			padding: 8px 10px;
+		/* 超小屏幕滚动条样式 */
+		&::-webkit-scrollbar {
+			width: 6px;
+		}
+		
+		&::-webkit-scrollbar-track {
+			background: rgba(255, 255, 255, 0.4);
+			border-radius: 3px;
+		}
+		
+		&::-webkit-scrollbar-thumb {
+			background: rgba(255, 255, 255, 0.8);
+			border-radius: 3px;
+			
+			&:hover {
+				background: rgba(255, 255, 255, 1);
+			}
+		}
+		
+		/* Firefox 超小屏幕滚动条 */
+		scrollbar-width: thin;
+		scrollbar-color: rgba(255, 255, 255, 0.8) rgba(255, 255, 255, 0.4);
+	}
+	
+	.result-table {
+		.markdown-content .evaluation-table {
+			font-size: 0.8rem;
+			min-width: 500px;
+			
+			td {
+				padding: 6px 8px;
+			}
+		}
+	}
+}
+
+// 回到顶部按钮样式
+:deep(.back-to-top) {
+	.el-backtop {
+		background: rgba(64, 158, 255, 0.9);
+		border: 2px solid rgba(255, 255, 255, 0.3);
+		box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+		transition: all 0.3s ease;
+		
+		&:hover {
+			background: rgba(64, 158, 255, 1);
+			transform: translateY(-2px);
+			box-shadow: 0 6px 16px rgba(0, 0, 0, 0.3);
+		}
+		
+		.el-icon {
+			color: white;
+			font-size: 18px;
 		}
 	}
 }
