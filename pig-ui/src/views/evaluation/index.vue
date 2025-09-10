@@ -403,6 +403,7 @@ onMounted(() => {
   margin-right: 10px;
   font-size: 1.4rem;
   color: #2c6fbb;
+  display: inline-block;
 }
 
 .input-group {
