@@ -186,7 +186,13 @@ const parseEvaluationResult = (markdownContent: string): void => {
 // 解析表格数据
 const parseTableData = (tableContent: string): void => {
   const lines = tableContent.split('\n').filter((line: string) => line.trim());
-  const tableLines = lines.filter((line: string) => line.includes('|') && !line.includes('---'));
+  
+  // 过滤掉表头行和分隔行
+  const tableLines = lines.filter((line: string) => {
+    return line.includes('|') && 
+           !line.includes('---') && 
+           !line.includes('维度 | 子维度 | 维度具体情况 | 结论 | 相关说明');
+  });
   
   tableData.value = [];
   let currentDimension = '';
@@ -363,24 +369,33 @@ onMounted(() => {
 
 .card {
   background: white;
-  border-radius: 8px;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
-  margin-bottom: 20px;
+  border-radius: 10px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  margin-bottom: 25px;
   overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
 }
 
 .card-header {
   padding: 15px 20px;
-  border-bottom: 1px solid #eee;
+  border-bottom: 2px solid #f0f7ff;
   color: #2c6fbb;
   font-weight: 600;
-  font-size: 16px;
+  font-size: 18px;
   display: flex;
   align-items: center;
+  margin-bottom: 5px;
 }
 
 .card-header i {
   margin-right: 10px;
+  font-size: 1.4rem;
+  color: #2c6fbb;
 }
 
 .input-group {
@@ -426,19 +441,20 @@ onMounted(() => {
 }
 
 .conclusion-title {
-  background-color: #f0f7ff;
   color: #2c6fbb;
   padding: 10px 15px;
-  border-left: 4px solid #2c6fbb;
+  border-left: 5px solid #2c6fbb;
   font-weight: 600;
   margin-bottom: 15px;
+  font-size: 18px;
+  background-color: #f0f7ff;
 }
 
 .conclusion-content {
   background: white;
-  padding: 15px;
-  border: 1px solid #eee;
-  border-radius: 4px;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
   /* 移除高度限制和垂直滚动 */
 }
 
@@ -465,12 +481,14 @@ table {
   border-collapse: collapse;
   border: 1px solid #ddd;
   table-layout: fixed; /* 固定表格布局 */
+  margin: 20px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
 }
 
 th, td {
-  padding: 12px 15px;
+  padding: 15px;
   text-align: left;
-  border: 1px solid #ddd;
+  border: 1px solid #e1e4e8;
   word-break: break-word; /* 允许单词内换行 */
   vertical-align: top; /* 顶部对齐 */
 }
@@ -485,7 +503,7 @@ th {
 }
 
 .dimension-row {
-  background-color: #4a8fd2;
+  background-color: #4a8fd2 !important;
   color: white;
 }
 
@@ -501,7 +519,7 @@ th {
 }
 
 .sub-dimension {
-  padding-left: 30px;
+  padding-left: 40px !important;
   background-color: #e8f1fb;
 }
 
