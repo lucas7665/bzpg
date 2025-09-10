@@ -75,5 +75,51 @@ public class StandardEvaluationController {
             return R.failed(result.getErrorMessage());
         }
     }
+    
+    /**
+     * 获取当前使用的AI模型
+     *
+     * @return 当前模型名称
+     */
+    @PermitAll
+    @Operation(description = "获取当前AI模型", summary = "获取当前AI模型")
+    @GetMapping("/current-model")
+    @ResponseBody
+    public R<String> getCurrentModel() {
+        return R.ok(standardEvaluationService.getCurrentModel());
+    }
+    
+    /**
+     * 切换AI模型
+     *
+     * @param modelName 模型名称
+     * @return 切换结果
+     */
+    @PermitAll
+    @Operation(description = "切换AI模型", summary = "切换AI模型")
+    @PostMapping("/switch-model")
+    @ResponseBody
+    public R<String> switchModel(@RequestParam String modelName) {
+        try {
+            standardEvaluationService.switchModel(modelName);
+            return R.ok("模型切换成功");
+        } catch (Exception e) {
+            log.error("模型切换失败：{}", e.getMessage());
+            return R.failed("模型切换失败：" + e.getMessage());
+        }
+    }
+    
+    /**
+     * 获取支持的AI模型列表
+     *
+     * @return 支持的模型列表
+     */
+    @PermitAll
+    @Operation(description = "获取支持的AI模型", summary = "获取支持的AI模型")
+    @GetMapping("/supported-models")
+    @ResponseBody
+    public R<java.util.List<String>> getSupportedModels() {
+        return R.ok(standardEvaluationService.getSupportedModels());
+    }
 
 }

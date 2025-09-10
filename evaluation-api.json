@@ -1,0 +1,314 @@
+{
+  "openapi": "3.0.1",
+  "info": {
+    "title": "标准评估模块 API",
+    "description": "标准评估模块相关接口文档",
+    "version": "1.0.0"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:9999/admin",
+      "description": "本地开发环境"
+    }
+  ],
+  "tags": [
+    {
+      "name": "标准评估模块",
+      "description": "标准评估相关接口"
+    }
+  ],
+  "paths": {
+    "/evaluation": {
+      "get": {
+        "tags": ["标准评估模块"],
+        "summary": "标准评估页面",
+        "description": "返回标准评估页面的HTML",
+        "operationId": "evaluationPage",
+        "responses": {
+          "200": {
+            "description": "成功返回评估页面",
+            "content": {
+              "text/html": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/evaluation/test": {
+      "get": {
+        "tags": ["标准评估模块"],
+        "summary": "测试接口",
+        "description": "用于测试服务是否正常运行",
+        "operationId": "test",
+        "responses": {
+          "200": {
+            "description": "测试成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "example": "测试成功"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/evaluation/assess": {
+      "post": {
+        "tags": ["标准评估模块"],
+        "summary": "标准评估",
+        "description": "对指定标准进行评估，返回评估结果",
+        "operationId": "assessStandard",
+        "requestBody": {
+          "description": "评估请求参数",
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StandardEvaluationRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "评估成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseStandardEvaluationResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器内部错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/evaluation/current-model": {
+      "get": {
+        "tags": ["标准评估模块"],
+        "summary": "获取当前AI模型",
+        "description": "获取当前使用的AI模型名称",
+        "operationId": "getCurrentModel",
+        "responses": {
+          "200": {
+            "description": "成功获取当前模型",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseString"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/evaluation/switch-model": {
+      "post": {
+        "tags": ["标准评估模块"],
+        "summary": "切换AI模型",
+        "description": "切换使用的AI模型",
+        "operationId": "switchModel",
+        "parameters": [
+          {
+            "name": "modelName",
+            "in": "query",
+            "description": "模型名称",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "deepseek"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "模型切换成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseString"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "模型切换失败",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/evaluation/supported-models": {
+      "get": {
+        "tags": ["标准评估模块"],
+        "summary": "获取支持的AI模型列表",
+        "description": "获取系统支持的所有AI模型列表",
+        "operationId": "getSupportedModels",
+        "responses": {
+          "200": {
+            "description": "成功获取支持的模型列表",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseStringList"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "StandardEvaluationRequest": {
+        "type": "object",
+        "required": ["title"],
+        "properties": {
+          "title": {
+            "type": "string",
+            "description": "标准名称",
+            "example": "元宇宙技术"
+          }
+        }
+      },
+      "StandardEvaluationResult": {
+        "type": "object",
+        "properties": {
+          "resultTable": {
+            "type": "string",
+            "description": "评估结果表格（Markdown格式）"
+          },
+          "result": {
+            "type": "string",
+            "description": "评估结果简述"
+          },
+          "status": {
+            "type": "string",
+            "description": "评估状态",
+            "enum": ["SUCCESS", "FAILED"]
+          },
+          "errorMessage": {
+            "type": "string",
+            "description": "错误信息（如果有）"
+          }
+        }
+      },
+      "ResponseStandardEvaluationResult": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "响应码，0表示成功",
+            "example": 0
+          },
+          "msg": {
+            "type": "string",
+            "description": "响应消息",
+            "nullable": true
+          },
+          "data": {
+            "$ref": "#/components/schemas/StandardEvaluationResult"
+          }
+        }
+      },
+      "ResponseString": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "响应码，0表示成功",
+            "example": 0
+          },
+          "msg": {
+            "type": "string",
+            "description": "响应消息",
+            "nullable": true
+          },
+          "data": {
+            "type": "string",
+            "description": "响应数据",
+            "example": "deepseek"
+          }
+        }
+      },
+      "ResponseStringList": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "响应码，0表示成功",
+            "example": 0
+          },
+          "msg": {
+            "type": "string",
+            "description": "响应消息",
+            "nullable": true
+          },
+          "data": {
+            "type": "array",
+            "description": "响应数据",
+            "items": {
+              "type": "string"
+            },
+            "example": ["deepseek", "kimi"]
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "错误码，非0表示错误",
+            "example": 1
+          },
+          "msg": {
+            "type": "string",
+            "description": "错误消息",
+            "example": "模型切换失败：不支持的模型: gpt4"
+          },
+          "data": {
+            "type": "object",
+            "description": "响应数据",
+            "nullable": true
+          }
+        }
+      }
+    }
+  }
+}

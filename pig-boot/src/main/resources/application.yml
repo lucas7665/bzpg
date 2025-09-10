@@ -57,21 +57,38 @@ security:
 swagger:
   token-url: ${swagger.gateway}/admin/oauth2/token
 
-# DeepSeek API 配置
-deepseek:
-  # 是否使用测试数据（默认为true，即使用测试数据而不调用API）
-  use_mock_data: false
-  api:
-    url: https://api.deepseek.com/v1/chat/completions
-    key: sk-4de8748b8bd84085957b446e1810ae9d  # 从环境变量获取API密钥
-    model: deepseek-chat  # 使用deepseek-chat模型（已升级至V3）
-    temperature: 0.2      # 降低随机性，提高一致性
-    max_tokens: 3000      # 保持足够长度以支持详细表格
-    stream: false         # 当前使用同步调用
-    timeout: 300000       # 5分钟超时
-  prompt:
-    #file: classpath:prompts/evaluation-prompt.txt  # 详细模式提示词（默认）
-    file: classpath:prompts/evaluation-prompt-fast.txt  # 快速模式提示词
+# AI模型配置
+ai:
+  # 当前使用的模型：deepseek 或 kimi
+  current-model: kimi
+  
+  # DeepSeek配置
+  deepseek:
+    use_mock_data: false
+    api:
+      url: https://api.deepseek.com/v1/chat/completions
+      key: sk-4de8748b8bd84085957b446e1810ae9d
+      model: deepseek-chat
+      temperature: 0.2
+      max_tokens: 3000
+      stream: false
+      timeout: 300000
+    prompt:
+      file: classpath:prompts/evaluation-prompt-fast.txt
+  
+  # Kimi配置
+  kimi:
+    use_mock_data: false
+    api:
+      url: https://api.moonshot.cn/v1/chat/completions
+      key: sk-oN08WRFLwiOcbILNF2Fw8dnOrUdAlROOtB1ZKGn02Q315rST
+      model: moonshot-v1-8k # moonshot-v1-128k
+      temperature: 0.2
+      max_tokens: 3000
+      stream: false
+      timeout: 300000
+    prompt:
+      file: classpath:prompts/evaluation-prompt-kimi.txt
 
 # mybatis-plus 配置
 mybatis-plus:
