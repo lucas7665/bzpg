@@ -366,12 +366,14 @@ onMounted(() => {
 .header h1 {
   color: #2c6fbb;
   font-size: 32px;
+  font-weight: 700;
   margin-bottom: 10px;
 }
 
 .header p {
-  color: #666;
+  color: #333;
   font-size: 18px;
+  font-weight: 500;
 }
 
 .card {
@@ -392,7 +394,7 @@ onMounted(() => {
   padding: 15px 20px;
   border-bottom: 2px solid #f0f7ff;
   color: #2c6fbb;
-  font-weight: 600;
+  font-weight: 700;
   font-size: 18px;
   display: flex;
   align-items: center;
@@ -452,7 +454,7 @@ onMounted(() => {
   color: #2c6fbb;
   padding: 10px 15px;
   border-left: 5px solid #2c6fbb;
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 15px;
   font-size: 18px;
   background-color: #f0f7ff;
@@ -475,7 +477,7 @@ onMounted(() => {
 
 .conclusion-content strong {
   color: #2c6fbb;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .table-container {
@@ -504,7 +506,7 @@ th, td {
 th {
   background-color: #2c6fbb;
   color: white;
-  font-weight: 600;
+  font-weight: 700;
   position: sticky; /* 表头固定 */
   top: 0;
   z-index: 10;
@@ -518,7 +520,7 @@ th {
 .dimension-cell {
   background-color: #4a8fd2;
   color: white;
-  font-weight: 600;
+  font-weight: 700;
   text-align: center;
   vertical-align: middle;
   position: sticky; /* 维度列固定 */
@@ -532,7 +534,7 @@ th {
 }
 
 .conclusion-cell {
-  font-weight: 600;
+  font-weight: 700;
   color: #28a745;
 }
 
@@ -573,8 +575,9 @@ table th:nth-child(5), table td:nth-child(5) {
 footer {
   text-align: center;
   margin-top: 40px;
-  color: #666;
+  color: #333;
   font-size: 14px;
+  font-weight: 500;
   padding: 20px 0;
   position: relative;
   z-index: 1;
