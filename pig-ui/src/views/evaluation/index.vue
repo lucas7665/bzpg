@@ -1,9 +1,10 @@
 <template>
   <div class="evaluation-container">
-    <div class="header">
-      <h1>技术标准化评估系统</h1>
-      <p>对新兴技术进行标准化可行性评估的专业工具</p>
-    </div>
+    <div class="container">
+      <div class="header">
+        <h1>技术标准化评估系统</h1>
+        <p>对新兴技术进行标准化可行性评估的专业工具</p>
+      </div>
 
     <div class="card">
       <div class="card-header">
@@ -73,8 +74,9 @@
     </div>
 
     <footer>
-      <p>© 2023 技术标准化评估系统 | 专业的技术标准可行性分析工具</p>
-    </footer>
+        <p>© 2023 技术标准化评估系统 | 专业的技术标准可行性分析工具</p>
+      </footer>
+    </div>
   </div>
 </template>
 
@@ -83,7 +85,6 @@ import { ref, reactive, onMounted } from 'vue';
 import { ElMessage } from 'element-plus';
 import { assessStandard, type StandardEvaluationRequest, type StandardEvaluationResult } from '/@/api/evaluation';
 import Watermark from '/@/utils/wartermark';
-import other from '/@/utils/other';
 
 interface TableRow {
   dimension: string;
@@ -304,9 +305,8 @@ const parseConclusionData = (conclusionContent: string): void => {
 
 // 生命周期钩子
 onMounted(() => {
-  // 设置页面标题
-  document.title = '技术标准化评估系统';
-  other.useTitle();
+  // 直接设置页面标题，只显示一个标题
+  document.title = '标准评估系统';
   
   // 强制删除水印
   Watermark.del();
@@ -323,30 +323,37 @@ onMounted(() => {
   height: 100vh; /* 设置固定高度 */
   overflow-y: auto; /* 添加垂直滚动条 */
   scroll-behavior: smooth; /* 平滑滚动 */
-  
-  /* 自定义滚动条样式 */
-  &::-webkit-scrollbar {
-    width: 12px;
-  }
-  
-  &::-webkit-scrollbar-track {
-    background: rgba(0, 0, 0, 0.05);
-    border-radius: 6px;
-  }
-  
-  &::-webkit-scrollbar-thumb {
-    background: rgba(44, 111, 187, 0.5);
-    border-radius: 6px;
-    border: 2px solid transparent;
-    background-clip: content-box;
-    
-    &:hover {
-      background: rgba(44, 111, 187, 0.7);
-      background-clip: content-box;
-    }
-  }
-  
-  /* Firefox 滚动条样式 */
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+/* 自定义滚动条样式 */
+.evaluation-container::-webkit-scrollbar {
+  width: 12px;
+}
+
+.evaluation-container::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 6px;
+}
+
+.evaluation-container::-webkit-scrollbar-thumb {
+  background: rgba(44, 111, 187, 0.5);
+  border-radius: 6px;
+  border: 2px solid transparent;
+  background-clip: content-box;
+}
+
+.evaluation-container::-webkit-scrollbar-thumb:hover {
+  background: rgba(44, 111, 187, 0.7);
+  background-clip: content-box;
+}
+
+/* Firefox 滚动条样式 */
+.evaluation-container {
   scrollbar-width: thin;
   scrollbar-color: rgba(44, 111, 187, 0.5) rgba(0, 0, 0, 0.05);
 }

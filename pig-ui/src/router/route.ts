@@ -72,11 +72,13 @@ export const staticRoutes: Array<RouteRecordRaw> = [
 	},
 	{
 		path: '/evaluation',
-		name: 'staticRoutes.evaluation',
+		name: 'evaluation',
 		component: () => import('/@/views/evaluation/index.vue'),
 		meta: {
 			isAuth: false, // 无需登录
 			isHide: false,
+			title: '标准评估系统',
+			enName: 'Standard Evaluation System'
 		},
 	}
 ];
