@@ -60,7 +60,7 @@
           </thead>
           <tbody>
             <template v-for="(row, index) in tableData" :key="index">
-              <tr :class="{'dimension-row': row.isDimensionHeader}">
+              <tr>
                 <td v-if="row.dimension" :rowspan="row.dimensionRowspan" class="dimension-cell">{{ row.dimension }}</td>
                 <td :class="{'sub-dimension': row.isSubDimension}">{{ row.subDimension }}</td>
                 <td>{{ row.specificSituation }}</td>
@@ -92,7 +92,7 @@ interface TableRow {
   specificSituation: string;
   conclusion: string;
   explanation: string;
-  isDimensionHeader: boolean;
+  isDimensionHeader: boolean; // 保留接口兼容性，但不再使用
   isSubDimension: boolean;
   dimensionRowspan: number;
 }
@@ -213,10 +213,10 @@ const parseTableData = (tableContent: string): void => {
       const conclusion = cells[3];
       const explanation = cells[4];
       
-      // 检查是否是维度标题行
-      const isDimensionHeader = dimension && dimension !== currentDimension && dimension !== '';
+      // 检查是否是新维度
+      const isNewDimension = dimension && dimension !== currentDimension && dimension !== '';
       
-      if (isDimensionHeader) {
+      if (isNewDimension) {
         // 结束上一个维度的rowspan计算
         if (currentDimension && dimensionRowspan > 0) {
           for (let i = dimensionStartIndex; i < tableData.value.length; i++) {
@@ -239,12 +239,12 @@ const parseTableData = (tableContent: string): void => {
       const isSubDimension = dimension === '';
       
       const newRow: TableRow = {
-        dimension: isDimensionHeader ? dimension : '',
+        dimension: isNewDimension ? dimension : '',
         subDimension: subDimension,
         specificSituation: specificSituation,
         conclusion: conclusion,
         explanation: explanation,
-        isDimensionHeader: Boolean(isDimensionHeader),
+        isDimensionHeader: false,
         isSubDimension: Boolean(isSubDimension),
         dimensionRowspan: 0
       };
@@ -512,10 +512,7 @@ th {
   z-index: 10;
 }
 
-.dimension-row {
-  background-color: #4a8fd2 !important;
-  color: white;
-}
+/* 移除了dimension-row样式 */
 
 .dimension-cell {
   background-color: #4a8fd2;
@@ -529,8 +526,8 @@ th {
 }
 
 .sub-dimension {
-  padding-left: 40px !important;
-  background-color: #e8f1fb;
+  padding-left: 15px !important;
+  /* 统一所有子维度的内边距 */
 }
 
 .conclusion-cell {
@@ -538,11 +535,11 @@ th {
   color: #28a745;
 }
 
-tr:nth-child(even):not(.dimension-row) {
+tr:nth-child(even) {
   background-color: #f5f7fa;
 }
 
-tr:hover:not(.dimension-row) {
+tr:hover {
   background-color: #f0f7ff;
 }
 
