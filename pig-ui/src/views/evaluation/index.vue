@@ -2,7 +2,7 @@
   <div class="evaluation-container">
     <div class="container">
       <div class="header">
-        <h1>技术标准化评估系统</h1>
+        <h1>技术标准化评估系统(概念验证版)</h1>
         <p>对新兴技术进行标准化可行性评估的专业工具</p>
       </div>
 
