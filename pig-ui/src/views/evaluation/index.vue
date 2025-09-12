@@ -4,7 +4,7 @@
   <div class="banner">
     <h1>标准化评估系统</h1>
     <div class="version-badge">
-      <i class="fas fa-flask"></i> 概念验证版
+      <i class="fas fa-flask"></i> STL大模型
     </div>
   </div>
   
@@ -84,7 +84,7 @@
     </div>
 
     <footer>
-        <p>© 2023 技术标准化评估系统 | 专业的技术标准可行性分析工具</p>
+        <p>© 2025 新一代技术标准化研究院 | 标准化评估系统 - 概念验证版</p>
         <p>反馈请联系: 15105417909</p>
       </footer>
     </div>
@@ -582,6 +582,7 @@ th {
   position: sticky; /* 表头固定 */
   top: 0;
   z-index: 10;
+  text-align: center; /* 文字居中 */
 }
 
 /* 移除了dimension-row样式 */
