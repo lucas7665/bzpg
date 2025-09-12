@@ -1,10 +1,17 @@
 <template>
   <div class="evaluation-container">
     <div class="container">
-      <div class="header">
-        <h1>技术标准化评估系统(概念验证版)</h1>
-        <p>对新兴技术进行标准化可行性评估的专业工具</p>
-      </div>
+  <div class="banner">
+    <h1>标准化评估系统</h1>
+    <div class="version-badge">
+      <i class="fas fa-flask"></i> 概念验证版
+    </div>
+  </div>
+  
+  
+  <div class="disclaimer">
+    <p><i class="fas fa-exclamation-triangle"></i> <strong>演示说明：</strong> 此页面为标准化评估系统的概念验证版本，仅用于展示和初步测试目的，非最终正式系统。</p>
+  </div>
 
     <div class="card">
       <div class="card-header">
@@ -23,9 +30,12 @@
           :disabled="loading"
           class="btn-primary"
         >
-          {{ loading ? '评估中...' : '评估' }}
+          {{ loading ? '评估中...' : '开始评估' }}
         </button>
       </div>
+      <p class="feedback-note">
+        <i class="fas fa-info-circle"></i> 请输入要评估的标准名称，然后点击"开始评估"按钮查看分析结果。
+      </p>
     </div>
 
     <div class="card" v-if="evaluationResult && evaluationResult.status === 'SUCCESS'">
@@ -75,6 +85,7 @@
 
     <footer>
         <p>© 2023 技术标准化评估系统 | 专业的技术标准可行性分析工具</p>
+        <p>反馈请联系: 15105417909</p>
       </footer>
     </div>
   </div>
@@ -315,7 +326,7 @@ onMounted(() => {
 
 <style scoped lang="scss">
 .evaluation-container {
-  background-color: #f8f9fa;
+  background: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
   min-height: 100vh;
   padding: 20px;
   padding-bottom: 80px; /* 添加底部安全区域 */
@@ -358,44 +369,105 @@ onMounted(() => {
   scrollbar-color: rgba(44, 111, 187, 0.5) rgba(0, 0, 0, 0.05);
 }
 
-.header {
-  text-align: center;
-  margin-bottom: 30px;
+.banner {
+  background: linear-gradient(90deg, #2c6fbb 0%, #4a8fd2 100%);
+  color: white;
+  padding: 15px 20px;
+  border-radius: 8px;
+  margin-bottom: 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
-.header h1 {
-  color: #2c6fbb;
-  font-size: 32px;
+.banner h1 {
+  color: white;
+  font-size: 24px;
   font-weight: 700;
-  margin-bottom: 10px;
+  margin: 0;
 }
 
-.header p {
-  color: #333;
-  font-size: 18px;
+.subtitle {
+  color: #666;
+  font-size: 16px;
   font-weight: 500;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.version-badge {
+  background: #ffc107;
+  color: #333;
+  padding: 4px 10px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.version-badge i {
+  margin-right: 5px;
+}
+
+.disclaimer {
+  background-color: #fff8e1;
+  border-left: 5px solid #ffc107;
+  padding: 12px 15px;
+  border-radius: 4px;
+  margin-bottom: 25px;
+  font-size: 14px;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+  height: 50px;
+}
+
+.disclaimer i {
+  color: #ffc107;
+  margin-right: 8px;
+  
+}
+
+.feedback-note {
+	background: #f0f7ff;
+    padding: 10px 15px;
+    border-radius: 4px;
+    margin-top: 5px;
+    font-size: 14px;
+    color: #666;
+    display: flex;
+    align-items: center;
+    margin-bottom: 45px;
+    margin-left: 20px;
+    margin-right: 20px;
+    height: 45px;
+}
+
+.feedback-note i {
+  color: #2c6fbb;
+  margin-right: 8px;
 }
 
 .card {
   background: white;
-  border-radius: 10px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
   margin-bottom: 25px;
   overflow: hidden;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+  transform: translateY(-3px);
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
 
 .card-header {
   padding: 15px 20px;
   border-bottom: 2px solid #f0f7ff;
   color: #2c6fbb;
-  font-weight: 700;
-  font-size: 18px;
+  font-weight: 800;
+  font-size: 22px;
   display: flex;
   align-items: center;
   margin-bottom: 5px;
@@ -454,7 +526,7 @@ onMounted(() => {
   color: #2c6fbb;
   padding: 10px 15px;
   border-left: 5px solid #2c6fbb;
-  font-weight: 700;
+  font-weight: 800;
   margin-bottom: 15px;
   font-size: 18px;
   background-color: #f0f7ff;
@@ -572,12 +644,13 @@ table th:nth-child(5), table td:nth-child(5) {
 footer {
   text-align: center;
   margin-top: 40px;
-  color: #333;
+  color: #666;
   font-size: 14px;
-  font-weight: 500;
+  font-weight: 400;
   padding: 20px 0;
   position: relative;
   z-index: 1;
+  border-top: 1px solid #e1e4e8;
 }
 
 @media (max-width: 768px) {
