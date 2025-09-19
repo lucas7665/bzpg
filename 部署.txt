@@ -1,0 +1,140 @@
+# Docker宝塔面板简化部署方案
+
+## 🚀 最简单的Docker宝塔面板部署
+
+### 第一步：创建目录
+```bash
+# 创建必要的目录
+mkdir -p /lucas/baota/{www,mysql,redis}
+```
+
+### 第二步：下载镜像
+```bash
+# 下载宝塔面板镜像
+docker pull pch18/baota:latest
+```
+
+### 第三步：启动容器
+```bash
+# 启动宝塔面板容器
+docker run -d \
+  --name baota-panel \
+  -p 8890:8888 \
+  -p 80:80 \
+  -p 443:443 \
+  -p 3306:3306 \
+  -p 6379:6379 \
+  -v /lucas/baota/www:/www \
+  -v /lucas/baota/mysql:/var/lib/mysql \
+  -v /lucas/baota/redis:/var/lib/redis \
+  --restart always \
+  --privileged \
+  pch18/baota:latest
+```
+
+### 第四步：等待启动
+```bash
+# 等待容器启动（约2-3分钟）
+sleep 120
+
+# 查看容器状态
+docker ps | grep baota
+```
+
+### 第五步：访问面板
+```bash
+# 获取面板信息
+docker exec baota-panel bt default
+```
+
+## 管理命令（简单版）
+```bash
+# 启动容器
+docker start baota-panel
+
+# 停止容器
+docker stop baota-panel
+
+# 查看状态
+docker ps | grep baota
+
+# 查看日志
+docker logs baota-panel
+
+# 进入容器
+docker exec -it baota-panel bash
+
+# 重启容器
+docker restart baota-panel
+```
+
+## 🎯 一键部署脚本（简化版）
+```bash
+# 创建简单的一键部署脚本
+cat > /lucas/baota/deploy.sh << 'EOF'
+#!/bin/bash
+
+echo "🚀 部署Docker宝塔面板..."
+
+# 创建目录
+mkdir -p /lucas/baota/{www,mysql,redis}
+
+# 下载镜像
+echo "📦 下载镜像..."
+docker pull pch18/baota:latest
+
+# 启动容器
+echo "🚀 启动容器..."
+docker run -d \
+  --name baota-panel \
+  -p 8890:8888 \
+  -p 80:80 \
+  -p 443:443 \
+  -p 3306:3306 \
+  -p 6379:6379 \
+  -v /lucas/baota/www:/www \
+  -v /lucas/baota/mysql:/var/lib/mysql \
+  -v /lucas/baota/redis:/var/lib/redis \
+  --restart always \
+  --privileged \
+  pch18/baota:latest
+
+echo "⏳ 等待启动..."
+sleep 120
+
+echo "✅ 部署完成！"
+echo "🌐 访问地址: http://47.111.111.13:8890"
+echo "👤 用户名: admin"
+echo "🔑 密码: 123456"
+EOF
+
+chmod +x /lucas/baota/deploy.sh
+```
+
+## 执行部署
+```bash
+# 运行一键部署
+/lucas/baota/deploy.sh
+```
+
+## 访问信息
+- **访问地址**: http://47.111.111.13:8890
+- **用户名**: admin
+- **密码**: 123456
+
+## 目录结构
+```
+/lucas/baota/
+├── www/          # 网站文件目录
+├── mysql/        # MySQL数据目录
+└── redis/        # Redis数据目录
+```
+
+## 注意事项
+1. 首次启动需要2-3分钟时间
+2. 容器会自动重启（--restart always）
+3. 所有数据持久化存储在 /lucas/baota/ 目录下
+4. 容器名称：baota-panel
+
+## 完成！
+就这么简单！只需要5个步骤就能完成Docker宝塔面板的部署。

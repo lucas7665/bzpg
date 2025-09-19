@@ -31,9 +31,14 @@ public class StandardEvaluationServiceImpl implements StandardEvaluationService 
         StandardEvaluationResult result = new StandardEvaluationResult();
         
         try {
-            // 获取当前配置的模型
+            // 检查是否启用本地模型
             String currentModel = aiModelConfig.getCurrentModel();
-            log.info("使用AI模型: {}，标准名称：{}", currentModel, request.getTitle());
+            if (aiModelConfig.getLocal().isEnabled()) {
+                currentModel = "local-deepseek";
+                log.info("本地模型已启用，使用本地DeepSeek模型，标准名称：{}", request.getTitle());
+            } else {
+                log.info("使用AI模型: {}，标准名称：{}", currentModel, request.getTitle());
+            }
             
             // 获取对应的模型服务
             AIModelService modelService = aiModelFactory.getModelService(currentModel);
@@ -56,6 +61,9 @@ public class StandardEvaluationServiceImpl implements StandardEvaluationService 
 
     @Override
     public String getCurrentModel() {
+        if (aiModelConfig.getLocal().isEnabled()) {
+            return "local-deepseek";
+        }
         return aiModelConfig.getCurrentModel();
     }
 

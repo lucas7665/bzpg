@@ -30,6 +30,11 @@ public class AIModelConfig {
      */
     private KimiConfig kimi = new KimiConfig();
     
+    /**
+     * 本地模型配置
+     */
+    private LocalModelConfig local = new LocalModelConfig();
+    
     @Data
     public static class DeepSeekConfig {
         private ApiConfig api = new ApiConfig();
@@ -39,6 +44,14 @@ public class AIModelConfig {
     
     @Data
     public static class KimiConfig {
+        private ApiConfig api = new ApiConfig();
+        private PromptConfig prompt = new PromptConfig();
+        private boolean useMockData = false;
+    }
+    
+    @Data
+    public static class LocalModelConfig {
+        private boolean enabled = false;
         private ApiConfig api = new ApiConfig();
         private PromptConfig prompt = new PromptConfig();
         private boolean useMockData = false;
