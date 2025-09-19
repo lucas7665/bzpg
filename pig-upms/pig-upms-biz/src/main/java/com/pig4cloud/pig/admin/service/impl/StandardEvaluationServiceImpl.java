@@ -35,7 +35,8 @@ public class StandardEvaluationServiceImpl implements StandardEvaluationService 
             String currentModel = aiModelConfig.getCurrentModel();
             if (aiModelConfig.getLocal().isEnabled()) {
                 currentModel = "local-deepseek";
-                log.info("本地模型已启用，使用本地DeepSeek模型，标准名称：{}", request.getTitle());
+                log.info("本地模型已启用，使用本地模型({})，标准名称：{}",
+                    aiModelConfig.getLocal().getApi().getModel(), request.getTitle());
             } else {
                 log.info("使用AI模型: {}，标准名称：{}", currentModel, request.getTitle());
             }
@@ -62,13 +63,23 @@ public class StandardEvaluationServiceImpl implements StandardEvaluationService 
     @Override
     public String getCurrentModel() {
         if (aiModelConfig.getLocal().isEnabled()) {
-            return "local-deepseek";
+            return "local:" + aiModelConfig.getLocal().getApi().getModel();
         }
         return aiModelConfig.getCurrentModel();
     }
 
     @Override
     public void switchModel(String modelName) {
+        // 检查是否是本地模型切换格式 local:<模型名>
+        if (modelName.startsWith("local:")) {
+            String localModelName = modelName.substring(6); // 去掉 "local:" 前缀
+            // 启用本地模型并设置具体模型名
+            aiModelConfig.getLocal().setEnabled(true);
+            aiModelConfig.getLocal().getApi().setModel(localModelName);
+            log.info("本地模型已切换为: {}", localModelName);
+            return;
+        }
+        
         // 验证模型是否支持
         if (!aiModelFactory.getModelService(modelName).supports(modelName)) {
             throw new IllegalArgumentException("不支持的模型: " + modelName);
@@ -81,7 +92,11 @@ public class StandardEvaluationServiceImpl implements StandardEvaluationService 
 
     @Override
     public List<String> getSupportedModels() {
-        return aiModelFactory.getSupportedModels();
+        List<String> models = aiModelFactory.getSupportedModels();
+        // 添加本地模型选项
+        models.add("local:qwen2.5:7b-instruct");
+        models.add("local:deepseek-r1:7b");
+        return models;
     }
 
     /**

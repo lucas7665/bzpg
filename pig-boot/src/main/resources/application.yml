@@ -96,7 +96,7 @@ ai:
     use_mock_data: false
     api:
       url: http://localhost:11434/api/generate  # Ollama默认端口
-      model: deepseek-r1:7b  # 本地模型名称，使用您已安装的模型
+      model: qwen2.5:7b-instruct  # 本地模型名称，推荐中文稳定
       temperature: 0.2
       max_tokens: 3000
       timeout: 300000

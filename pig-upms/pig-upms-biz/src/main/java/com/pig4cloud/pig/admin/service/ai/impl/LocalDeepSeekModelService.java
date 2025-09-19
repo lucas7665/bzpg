@@ -1,5 +1,6 @@
 package com.pig4cloud.pig.admin.service.ai.impl;
 
+import com.pig4cloud.pig.admin.config.AIModelConfig;
 import com.pig4cloud.pig.admin.dto.StandardEvaluationRequest;
 import com.pig4cloud.pig.admin.service.ai.AIModelService;
 import lombok.RequiredArgsConstructor;
@@ -32,8 +33,7 @@ public class LocalDeepSeekModelService implements AIModelService {
     @Value("${ai.local.api.url:http://localhost:11434/api/generate}")
     private String apiUrl;
     
-    @Value("${ai.local.api.model:deepseek-coder}")
-    private String model;
+    private final AIModelConfig aiModelConfig;
     
     @Value("${ai.local.api.temperature:0.2}")
     private double temperature;
@@ -90,7 +90,7 @@ public class LocalDeepSeekModelService implements AIModelService {
     
     private String callLocalOllamaApi(String prompt) {
         Map<String, Object> requestBody = new HashMap<>();
-        requestBody.put("model", model);
+        requestBody.put("model", aiModelConfig.getLocal().getApi().getModel());
         requestBody.put("prompt", prompt);
         requestBody.put("stream", false);
         requestBody.put("options", Map.of(
