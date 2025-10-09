@@ -59,3 +59,8 @@ Thumbs.db
 Servers
 .metadata
 .flattened-pom.xml
+
+### documentation ignore ###
+本地模型使用说明.md
+标准评估模块集成说明.md
+标准评估模块使用说明.md
