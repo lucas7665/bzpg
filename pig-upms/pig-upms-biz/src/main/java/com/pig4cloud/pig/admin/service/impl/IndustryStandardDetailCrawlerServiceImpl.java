@@ -292,22 +292,14 @@ public class IndustryStandardDetailCrawlerServiceImpl implements IndustryStandar
 	 * 解析备案信息
 	 */
 	private void parseRecordInfo(Document doc, IndustryStandardDetailInfo info) {
-		// 查找备案信息段落 - 使用更精确的选择器
-		Elements recordSections = doc.select("div.para-title h2.title-text");
-		Element recordSection = null;
-		for (Element section : recordSections) {
-			if ("备案信息".equals(section.text().trim())) {
-				recordSection = section.parent();
-				break;
-			}
-		}
-		
+		// 查找备案信息段落
+		Element recordSection = doc.select("div.para-title:contains(备案信息)").first();
 		if (recordSection != null) {
-			Element nextSibling = recordSection.nextElementSibling();
-			if (nextSibling != null) {
-				Elements paragraphs = nextSibling.select("p");
-				for (Element p : paragraphs) {
-					String text = p.text().trim();
+			// 备案信息段落后面直接跟着p标签，不是div
+			Element current = recordSection.nextElementSibling();
+			while (current != null) {
+				if (current.tagName().equals("p")) {
+					String text = current.text().trim();
 					log.debug("解析备案信息段落: {}", text);
 					
 					if (text.startsWith("备案号：")) {
@@ -318,7 +310,7 @@ public class IndustryStandardDetailCrawlerServiceImpl implements IndustryStandar
 						log.debug("提取备案日期: {}", info.getRecordDate());
 					} else if (text.startsWith("备案月报：")) {
 						// 提取链接文本
-						Element link = p.select("a").first();
+						Element link = current.select("a").first();
 						if (link != null) {
 							info.setRecordBulletin(link.text().trim());
 							log.debug("提取备案月报(链接): {}", info.getRecordBulletin());
@@ -327,7 +319,11 @@ public class IndustryStandardDetailCrawlerServiceImpl implements IndustryStandar
 							log.debug("提取备案月报(文本): {}", info.getRecordBulletin());
 						}
 					}
+				} else if (current.hasClass("para-title")) {
+					// 遇到下一个段落，停止解析
+					break;
 				}
+				current = current.nextElementSibling();
 			}
 		} else {
 			log.debug("未找到备案信息段落");
@@ -339,21 +335,19 @@ public class IndustryStandardDetailCrawlerServiceImpl implements IndustryStandar
 	 */
 	private void parseScope(Document doc, IndustryStandardDetailInfo info) {
 		// 查找适用范围段落
-		Elements scopeSections = doc.select("div.para-title h2.title-text");
-		Element scopeSection = null;
-		for (Element section : scopeSections) {
-			if ("适用范围".equals(section.text().trim())) {
-				scopeSection = section.parent();
-				break;
-			}
-		}
-		
+		Element scopeSection = doc.select("div.para-title:contains(适用范围)").first();
 		if (scopeSection != null) {
-			Element nextSibling = scopeSection.nextElementSibling();
-			if (nextSibling != null) {
-				String scopeText = nextSibling.text().trim();
-				info.setScope(scopeText);
-				log.debug("提取适用范围: {}", scopeText);
+			Element current = scopeSection.nextElementSibling();
+			while (current != null) {
+				if (current.tagName().equals("p")) {
+					String scopeText = current.text().trim();
+					info.setScope(scopeText);
+					log.debug("提取适用范围: {}", scopeText);
+					break;
+				} else if (current.hasClass("para-title")) {
+					break;
+				}
+				current = current.nextElementSibling();
 			}
 		} else {
 			log.debug("未找到适用范围段落");
@@ -365,46 +359,42 @@ public class IndustryStandardDetailCrawlerServiceImpl implements IndustryStandar
 	 */
 	private void parseDraftingInfo(Document doc, IndustryStandardDetailInfo info) {
 		// 解析起草单位
-		Elements unitsSections = doc.select("div.para-title h2.title-text");
-		Element unitsSection = null;
-		for (Element section : unitsSections) {
-			if ("起草单位".equals(section.text().trim())) {
-				unitsSection = section.parent();
-				break;
-			}
-		}
-		
+		Element unitsSection = doc.select("div.para-title:contains(起草单位)").first();
 		if (unitsSection != null) {
-			Element nextSibling = unitsSection.nextElementSibling();
-			if (nextSibling != null) {
-				String unitsText = nextSibling.text().trim();
-				if (!unitsText.isEmpty() && !unitsText.equals(" ")) {
-					info.setDraftingUnits(unitsText);
-					log.debug("提取起草单位: {}", unitsText);
+			Element current = unitsSection.nextElementSibling();
+			while (current != null) {
+				if (current.tagName().equals("p")) {
+					String unitsText = current.text().trim();
+					if (!unitsText.isEmpty() && !unitsText.equals(" ")) {
+						info.setDraftingUnits(unitsText);
+						log.debug("提取起草单位: {}", unitsText);
+					}
+					break;
+				} else if (current.hasClass("para-title")) {
+					break;
 				}
+				current = current.nextElementSibling();
 			}
 		} else {
 			log.debug("未找到起草单位段落");
 		}
-		
+
 		// 解析起草人
-		Elements personsSections = doc.select("div.para-title h2.title-text");
-		Element personsSection = null;
-		for (Element section : personsSections) {
-			if ("起草人".equals(section.text().trim())) {
-				personsSection = section.parent();
-				break;
-			}
-		}
-		
+		Element personsSection = doc.select("div.para-title:contains(起草人)").first();
 		if (personsSection != null) {
-			Element nextSibling = personsSection.nextElementSibling();
-			if (nextSibling != null) {
-				String personsText = nextSibling.text().trim();
-				if (!personsText.isEmpty() && !personsText.equals(" ")) {
-					info.setDraftingPersons(personsText);
-					log.debug("提取起草人: {}", personsText);
+			Element current = personsSection.nextElementSibling();
+			while (current != null) {
+				if (current.tagName().equals("p")) {
+					String personsText = current.text().trim();
+					if (!personsText.isEmpty() && !personsText.equals(" ")) {
+						info.setDraftingPersons(personsText);
+						log.debug("提取起草人: {}", personsText);
+					}
+					break;
+				} else if (current.hasClass("para-title")) {
+					break;
 				}
+				current = current.nextElementSibling();
 			}
 		} else {
 			log.debug("未找到起草人段落");
