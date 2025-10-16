@@ -105,6 +105,14 @@
             <artifactId>jsoup</artifactId>
             <version>1.17.2</version>
         </dependency>
+        <!--OCR验证码识别工具-->
+        <dependency>
+            <groupId>com.mmg</groupId>
+            <artifactId>ddddocr4j</artifactId>
+            <version>1.0.0</version>
+            <scope>system</scope>
+            <systemPath>${project.basedir}/../../ocrtool.jar</systemPath>
+        </dependency>
     </dependencies>
 
     <profiles>
@@ -122,6 +130,9 @@
                     <plugin>
                         <groupId>org.springframework.boot</groupId>
                         <artifactId>spring-boot-maven-plugin</artifactId>
+                        <configuration>
+                            <includeSystemScope>true</includeSystemScope>
+                        </configuration>
                     </plugin>
                     <plugin>
                         <groupId>io.fabric8</groupId>

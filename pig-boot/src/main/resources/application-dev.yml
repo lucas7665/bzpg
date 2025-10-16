@@ -17,6 +17,14 @@ file:
     enable: true
     base-path: /Users/lengleng/Downloads/img
 
+# 标准文档下载配置
+standard:
+  download:
+    dir: /Users/mac/Downloads/standards/  # 标准文档下载目录
+    batch-size: 100        # 批处理大小
+    retry-count: 1         # 重试次数
+    delay-seconds: 1       # 请求延迟秒数
+
 ## 登录配置
 security:
   # 登录报文加密根密钥 ，必须是16位
