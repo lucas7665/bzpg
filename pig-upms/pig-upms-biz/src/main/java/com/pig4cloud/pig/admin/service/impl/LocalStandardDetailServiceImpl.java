@@ -28,6 +28,21 @@ public class LocalStandardDetailServiceImpl extends ServiceImpl<LocalStandardDet
     }
 
     @Override
+    public List<String> getCityCodesNeedingDetailInfo() {
+        return baseMapper.getCityCodesNeedingDetailInfo();
+    }
+
+    @Override
+    public List<String> getPksNeedingDetailInfoByCity(String cityCode, int offset, int limit) {
+        return baseMapper.getPksNeedingDetailInfoByCity(cityCode, offset, limit);
+    }
+
+    @Override
+    public long getCountNeedingDetailInfoByCity(String cityCode) {
+        return baseMapper.getCountNeedingDetailInfoByCity(cityCode);
+    }
+
+    @Override
     public List<String> getPksNeedingDownload(int offset, int limit) {
         return baseMapper.getPksNeedingDownload(offset, limit);
     }

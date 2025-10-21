@@ -28,8 +28,8 @@ standard:
 # 地方标准爬取配置
 local-standard:
   crawl:
-    batch-size: 50         # 批处理大小
-    delay-seconds: 2       # 请求延迟秒数
+    batch-size: 200        # 批处理大小（优化：从50改为200）
+    delay-seconds: 0.5     # 请求延迟秒数（优化：从2改为0.5）
   download:
     dir: /Users/mac/Downloads/local-standards/  # 地方标准文档下载目录
     batch-size: 50         # 批处理大小

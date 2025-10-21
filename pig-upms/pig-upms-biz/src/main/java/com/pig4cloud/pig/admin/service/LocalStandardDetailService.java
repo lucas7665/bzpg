@@ -24,6 +24,21 @@ public interface LocalStandardDetailService extends IService<LocalStandardDetail
     long getCountNeedingDetailInfo();
 
     /**
+     * 获取所有需要爬取详细信息的城市代码列表
+     */
+    List<String> getCityCodesNeedingDetailInfo();
+
+    /**
+     * 按城市获取需要爬取详细信息的标准PK列表（分页）
+     */
+    List<String> getPksNeedingDetailInfoByCity(String cityCode, int offset, int limit);
+
+    /**
+     * 按城市获取需要爬取详细信息的标准总数
+     */
+    long getCountNeedingDetailInfoByCity(String cityCode);
+
+    /**
      * 获取需要下载文档的标准PK列表（分页）
      */
     List<String> getPksNeedingDownload(int offset, int limit);

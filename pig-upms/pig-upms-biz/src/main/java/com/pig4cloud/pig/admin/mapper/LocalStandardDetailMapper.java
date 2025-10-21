@@ -38,6 +38,35 @@ public interface LocalStandardDetailMapper extends BaseMapper<LocalStandardDetai
     long getCountNeedingDetailInfo();
 
     /**
+     * 获取所有需要爬取详细信息的城市代码列表
+     */
+    @Select("SELECT DISTINCT d.city_code FROM local_standard_detail d " +
+            "LEFT JOIN local_standard_detail_info di ON d.pk = di.pk " +
+            "WHERE di.pk IS NULL AND d.city_code IS NOT NULL " +
+            "ORDER BY d.city_code")
+    List<String> getCityCodesNeedingDetailInfo();
+
+    /**
+     * 按城市获取需要爬取详细信息的标准PK列表（分页）
+     */
+    @Select("SELECT d.pk FROM local_standard_detail d " +
+            "LEFT JOIN local_standard_detail_info di ON d.pk = di.pk " +
+            "WHERE di.pk IS NULL AND d.city_code = #{cityCode} " +
+            "ORDER BY d.create_time " +
+            "LIMIT #{offset}, #{limit}")
+    List<String> getPksNeedingDetailInfoByCity(@Param("cityCode") String cityCode, 
+                                                 @Param("offset") int offset, 
+                                                 @Param("limit") int limit);
+
+    /**
+     * 按城市获取需要爬取详细信息的标准总数
+     */
+    @Select("SELECT COUNT(*) FROM local_standard_detail d " +
+            "LEFT JOIN local_standard_detail_info di ON d.pk = di.pk " +
+            "WHERE di.pk IS NULL AND d.city_code = #{cityCode}")
+    long getCountNeedingDetailInfoByCity(@Param("cityCode") String cityCode);
+
+    /**
      * 获取需要下载文档的标准PK列表（分页）
      * 只返回还没有下载记录的标准
      */
