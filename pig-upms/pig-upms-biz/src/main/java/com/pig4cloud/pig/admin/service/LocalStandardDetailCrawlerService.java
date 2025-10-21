@@ -59,7 +59,7 @@ public class LocalStandardDetailCrawlerService {
                 }
                 
                 // 4. 转换为实体对象
-                List<LocalStandardDetail> pageStandards = convertToEntities(queryResponse.getRecords());
+                List<LocalStandardDetail> pageStandards = convertToEntities(queryResponse.getRecords(), cityCode);
                 allStandards.addAll(pageStandards);
                 
                 // 5. 更新分页信息
@@ -95,7 +95,7 @@ public class LocalStandardDetailCrawlerService {
     /**
      * 转换为实体对象列表
      */
-    private List<LocalStandardDetail> convertToEntities(List<StandardRecord> records) {
+    private List<LocalStandardDetail> convertToEntities(List<StandardRecord> records, String cityCode) {
         List<LocalStandardDetail> details = new ArrayList<>();
         
         for (StandardRecord record : records) {
@@ -110,6 +110,10 @@ public class LocalStandardDetailCrawlerService {
             // 地标特有字段
             detail.setCity(record.getIndustry()); // industry字段在地标中存储城市名
             detail.setChargeDept(record.getChargeDept());
+            
+            // 设置城市代码（重要！）
+            detail.setCityCode(cityCode);
+            log.debug("设置标准 {} 的城市代码为: {}", record.getPk(), cityCode);
             
             // 时间字段处理
             detail.setIssueDate(record.getIssueDate());
