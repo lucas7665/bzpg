@@ -5,11 +5,13 @@ import com.pig4cloud.pig.admin.entity.LocalStandardDetail;
 import com.pig4cloud.pig.admin.entity.LocalStandardDetailInfo;
 import com.pig4cloud.pig.admin.service.LocalStandardDetailInfoCrawlerService;
 import com.pig4cloud.pig.admin.service.LocalStandardDetailService;
+import com.pig4cloud.pig.admin.service.LocalStandardDetailInfoService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,6 +27,7 @@ public class LocalStandardDetailInfoCrawlerTask {
 
     private final LocalStandardDetailInfoCrawlerService detailInfoCrawlerService;
     private final LocalStandardDetailService localStandardDetailService;
+    private final LocalStandardDetailInfoService localStandardDetailInfoService;
 
     @Value("${local-standard.crawl.batch-size:50}")
     private int batchSize;
@@ -37,64 +40,94 @@ public class LocalStandardDetailInfoCrawlerTask {
      */
     public String crawlLocalStandardDetailInfos() {
         log.info("开始执行地方标准详细信息爬取任务");
-        
+
         try {
-            // 这里应该从数据库获取需要爬取详细信息的标准列表
-            // 暂时使用模拟数据
-            List<LocalStandardDetail> pendingList = getPendingDetailInfoList();
-            log.info("找到 {} 个需要爬取详细信息的标准", pendingList.size());
-            
-            if (pendingList.isEmpty()) {
+            // 先获取总数
+            long totalCount = localStandardDetailService.getCountNeedingDetailInfo();
+            log.info("找到 {} 个需要爬取详细信息的标准", totalCount);
+
+            if (totalCount == 0) {
                 return "没有需要爬取详细信息的标准";
             }
-            
-            // 分批处理
-            int totalBatches = (pendingList.size() + batchSize - 1) / batchSize;
+
             int successCount = 0;
             int failCount = 0;
-            
-            for (int i = 0; i < pendingList.size(); i += batchSize) {
-                int end = Math.min(i + batchSize, pendingList.size());
-                List<LocalStandardDetail> batch = pendingList.subList(i, end);
-                int currentBatch = (i / batchSize) + 1;
-                
-                log.info("处理第 {}/{} 批，共 {} 个标准", currentBatch, totalBatches, batch.size());
-                
+            int processedBatches = 0;
+
+            // 循环处理所有批次，直到没有更多数据
+            while (true) {
+                // 每次获取一批待处理的数据
+                List<LocalStandardDetail> batch = getPendingDetailInfoList();
+
+                if (batch.isEmpty()) {
+                    log.info("所有数据处理完成");
+                    break;
+                }
+
+                processedBatches++;
+                log.info("处理第 {} 批，共 {} 个标准", processedBatches, batch.size());
+
+                // 收集本批次成功爬取的数据
+                List<LocalStandardDetailInfo> batchInfoList = new ArrayList<>();
+
                 for (LocalStandardDetail detail : batch) {
                     try {
                         LocalStandardDetailInfo info = detailInfoCrawlerService.crawlStandardDetailInfo(detail);
                         if (info != null) {
-                            // 这里应该保存到数据库
+                            // 填充PK（防止实现里未赋值）
+                            if (info.getPk() == null) {
+                                info.setPk(detail.getPk());
+                            }
+
+                            batchInfoList.add(info);
                             log.debug("标准 {} 详细信息爬取成功", detail.getPk());
                             successCount++;
                         } else {
                             log.warn("标准 {} 详细信息爬取失败", detail.getPk());
                             failCount++;
                         }
-                        
+
                         // 请求间隔
                         if (delaySeconds > 0) {
                             Thread.sleep(delaySeconds * 1000);
                         }
-                        
+
                     } catch (Exception e) {
                         log.error("爬取标准 {} 详细信息失败", detail.getPk(), e);
                         failCount++;
                     }
                 }
-                
-                // 批次间延迟
-                if (currentBatch < totalBatches) {
-                    log.info("批次 {} 完成，等待下一批次...", currentBatch);
-                    Thread.sleep(5000); // 5秒批次间隔
+
+                // 批量插入本批次数据
+                // 由于查询条件确保这些PK在detail_info表中不存在，直接批量插入即可
+                if (!batchInfoList.isEmpty()) {
+                    try {
+                        localStandardDetailInfoService.saveBatch(batchInfoList);
+                        log.info("批次 {} 数据批量插入成功，共 {} 条", processedBatches, batchInfoList.size());
+                    } catch (Exception e) {
+                        log.error("批次 {} 数据批量插入失败", processedBatches, e);
+                        // 批量插入失败时，降级为逐个插入
+                        log.info("降级为逐个插入...");
+                        for (LocalStandardDetailInfo info : batchInfoList) {
+                            try {
+                                localStandardDetailInfoService.save(info);
+                            } catch (Exception ex) {
+                                log.error("插入标准 {} 详细信息失败", info.getPk(), ex);
+                            }
+                        }
+                    }
                 }
+
+                // 批次间延迟
+                log.info("批次 {} 完成，等待下一批次...", processedBatches);
+                Thread.sleep(5000); // 5秒批次间隔
             }
-            
-            String result = String.format("地方标准详细信息爬取完成：成功 %d 个，失败 %d 个，总计 %d 个", 
-                successCount, failCount, pendingList.size());
+
+            String result = String.format("地方标准详细信息爬取完成：成功 %d 个，失败 %d 个，总计 %d 个",
+                successCount, failCount, (successCount + failCount));
             log.info(result);
             return result;
-            
+
         } catch (Exception e) {
             log.error("执行地方标准详细信息爬取任务失败", e);
             return "地方标准详细信息爬取失败: " + e.getMessage();
@@ -102,16 +135,17 @@ public class LocalStandardDetailInfoCrawlerTask {
     }
 
     /**
-     * 获取需要爬取详细信息的标准列表
-     * 从数据库查询需要爬取详细信息的标准
+     * 获取一批需要爬取详细信息的标准列表
+     * 每次返回 batchSize 条数据
+     * 查询条件：local_standard_detail表中存在但local_standard_detail_info表中不存在的记录
      */
     private List<LocalStandardDetail> getPendingDetailInfoList() {
-        // 查询条件：local_standard_detail表中存在但local_standard_detail_info表中不存在的记录
+        // 每次从头开始查询，因为前一批已经插入到 detail_info 表中，会被自动过滤掉
         List<String> pks = localStandardDetailService.getPksNeedingDetailInfo(0, batchSize);
         if (pks.isEmpty()) {
             return List.of();
         }
-        
+
         // 使用PK字段查询，而不是ID
         return localStandardDetailService.list(
             new LambdaQueryWrapper<LocalStandardDetail>()
