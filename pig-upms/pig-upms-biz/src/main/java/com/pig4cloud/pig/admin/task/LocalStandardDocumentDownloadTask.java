@@ -1,5 +1,6 @@
 package com.pig4cloud.pig.admin.task;
 
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.pig4cloud.pig.admin.entity.LocalStandardDetail;
 import com.pig4cloud.pig.admin.service.LocalStandardDocumentDownloadService;
 import com.pig4cloud.pig.admin.service.LocalStandardDetailService;
@@ -175,7 +176,11 @@ public class LocalStandardDocumentDownloadTask {
             return List.of();
         }
         
-        return localStandardDetailService.listByIds(pks);
+        // 使用PK字段查询，而不是ID
+        return localStandardDetailService.list(
+            new LambdaQueryWrapper<LocalStandardDetail>()
+                .in(LocalStandardDetail::getPk, pks)
+        );
     }
 
     /**
@@ -189,6 +194,10 @@ public class LocalStandardDocumentDownloadTask {
             return List.of();
         }
         
-        return localStandardDetailService.listByIds(pks);
+        // 使用PK字段查询，而不是ID
+        return localStandardDetailService.list(
+            new LambdaQueryWrapper<LocalStandardDetail>()
+                .in(LocalStandardDetail::getPk, pks)
+        );
     }
 }
