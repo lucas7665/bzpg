@@ -29,7 +29,8 @@ standard:
 local-standard:
   crawl:
     batch-size: 200        # 批处理大小（优化：从50改为200）
-    delay-seconds: 0.5     # 请求延迟秒数（优化：从2改为0.5）
+    delay-seconds: 0     # 请求延迟秒数（优化：从2改为0.5）
+    concurrent-threads: 3  # 并发线程数（同时处理几个城市，建议2-5）
   download:
     dir: /Users/mac/Downloads/local-standards/  # 地方标准文档下载目录
     batch-size: 50         # 批处理大小
