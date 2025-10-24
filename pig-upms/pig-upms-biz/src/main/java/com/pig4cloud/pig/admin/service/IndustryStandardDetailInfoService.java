@@ -55,4 +55,26 @@ public interface IndustryStandardDetailInfoService extends IService<IndustryStan
 	 */
 	int saveBatchDetailInfo(List<IndustryStandardDetailInfo> detailInfos);
 
+	/**
+	 * 根据行业代码分页获取需要爬取详细信息的pk列表
+	 * @param industryCode 行业代码
+	 * @param offset 偏移量
+	 * @param limit 限制数量
+	 * @return pk列表
+	 */
+	List<String> getPksNeedingDetailInfoByIndustryCode(String industryCode, int offset, int limit);
+
+	/**
+	 * 根据行业代码获取需要爬取详细信息的记录总数
+	 * @param industryCode 行业代码
+	 * @return 总数
+	 */
+	long getPksNeedingDetailInfoCountByIndustryCode(String industryCode);
+
+	/**
+	 * 获取所有需要爬取详细信息的行业代码列表
+	 * @return 行业代码列表
+	 */
+	List<String> getIndustryCodesNeedingDetailInfo();
+
 }

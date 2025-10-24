@@ -83,4 +83,19 @@ public class IndustryStandardDetailInfoServiceImpl extends ServiceImpl<IndustryS
 		}
 	}
 
+	@Override
+	public List<String> getPksNeedingDetailInfoByIndustryCode(String industryCode, int offset, int limit) {
+		return baseMapper.selectPksNeedingDetailInfoByIndustryCode(industryCode, offset, limit);
+	}
+
+	@Override
+	public long getPksNeedingDetailInfoCountByIndustryCode(String industryCode) {
+		return baseMapper.selectPksNeedingDetailInfoCountByIndustryCode(industryCode);
+	}
+
+	@Override
+	public List<String> getIndustryCodesNeedingDetailInfo() {
+		return baseMapper.getIndustryCodesNeedingDetailInfo();
+	}
+
 }

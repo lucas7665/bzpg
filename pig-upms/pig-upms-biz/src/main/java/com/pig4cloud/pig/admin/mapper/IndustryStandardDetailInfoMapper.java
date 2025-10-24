@@ -51,4 +51,40 @@ public interface IndustryStandardDetailInfoMapper extends BaseMapper<IndustrySta
 			"WHERE NOT EXISTS (SELECT 1 FROM industry_standard_detail_info i WHERE i.pk = d.pk)")
 	long selectPksNeedingDetailInfoCount();
 
+	/**
+	 * 根据行业代码查询需要爬取详细信息的PK列表
+	 * @param industryCode 行业代码
+	 * @param offset 偏移量
+	 * @param limit 限制数量
+	 * @return pk列表
+	 */
+	@Select("SELECT d.pk FROM industry_standard_detail d " +
+			"LEFT JOIN industry_standard_detail_info di ON d.pk = di.pk " +
+			"WHERE di.pk IS NULL AND d.industry_code = #{industryCode} " +
+			"ORDER BY d.create_time " +
+			"LIMIT #{limit} OFFSET #{offset}")
+	List<String> selectPksNeedingDetailInfoByIndustryCode(@Param("industryCode") String industryCode, 
+	                                                      @Param("offset") int offset, 
+	                                                      @Param("limit") int limit);
+
+	/**
+	 * 根据行业代码查询需要爬取详细信息的记录总数
+	 * @param industryCode 行业代码
+	 * @return 总数
+	 */
+	@Select("SELECT COUNT(*) FROM industry_standard_detail d " +
+			"LEFT JOIN industry_standard_detail_info di ON d.pk = di.pk " +
+			"WHERE di.pk IS NULL AND d.industry_code = #{industryCode}")
+	long selectPksNeedingDetailInfoCountByIndustryCode(@Param("industryCode") String industryCode);
+
+	/**
+	 * 获取所有需要爬取详细信息的行业代码列表
+	 * @return 行业代码列表
+	 */
+	@Select("SELECT DISTINCT d.industry_code FROM industry_standard_detail d " +
+			"LEFT JOIN industry_standard_detail_info di ON d.pk = di.pk " +
+			"WHERE di.pk IS NULL AND d.industry_code IS NOT NULL " +
+			"ORDER BY d.industry_code")
+	List<String> getIndustryCodesNeedingDetailInfo();
+
 }

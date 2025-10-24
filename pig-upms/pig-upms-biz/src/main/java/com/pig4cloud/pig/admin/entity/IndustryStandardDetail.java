@@ -142,6 +142,12 @@ public class IndustryStandardDetail extends Model<IndustryStandardDetail> {
 	private Long industryCategoryId;
 
 	/**
+	 * 行业代码，关联industry_category.industry_code
+	 */
+	@Schema(description = "行业代码")
+	private String industryCode;
+
+	/**
 	 * 创建者
 	 */
 	@TableField(fill = FieldFill.INSERT)

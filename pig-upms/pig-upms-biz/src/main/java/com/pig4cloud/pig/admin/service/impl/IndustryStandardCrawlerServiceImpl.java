@@ -182,10 +182,11 @@ public class IndustryStandardCrawlerServiceImpl implements IndustryStandardCrawl
 					List<IndustryStandardDetail> standards = crawlStandardDetailsByIndustry(category.getIndustryName());
 					
 					if (!standards.isEmpty()) {
-						// 设置行业分类关联
-						standards.forEach(standard -> 
-							standard.setIndustryCategoryId(category.getId())
-						);
+						// 设置行业分类关联（同时设置 industry_code 和 industry_category_id）
+						standards.forEach(standard -> {
+							standard.setIndustryCategoryId(category.getId());  // 保留原有关联
+							standard.setIndustryCode(category.getIndustryCode()); // 新增：设置行业代码
+						});
 						
 						detailService.saveOrUpdateBatch(standards);
 						totalStandards += standards.size();

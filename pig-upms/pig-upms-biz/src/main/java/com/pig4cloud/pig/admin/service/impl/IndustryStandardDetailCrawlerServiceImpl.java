@@ -77,7 +77,7 @@ public class IndustryStandardDetailCrawlerServiceImpl implements IndustryStandar
 				}
 
 				// 分批处理当前页的数据
-				int batchSize = 10; // 每批处理100条
+				int batchSize = 100; // 每批处理100条
 				for (int i = 0; i < pks.size(); i += batchSize) {
 					int end = Math.min(i + batchSize, pks.size());
 					List<String> batch = pks.subList(i, end);
@@ -90,7 +90,7 @@ public class IndustryStandardDetailCrawlerServiceImpl implements IndustryStandar
 
 					// 批次间延迟，避免请求过于频繁
 					if (i + batchSize < pks.size()) {
-						Thread.sleep(2000);
+						Thread.sleep(200);
 					}
 				}
 
@@ -98,7 +98,7 @@ public class IndustryStandardDetailCrawlerServiceImpl implements IndustryStandar
 
 				// 页间延迟
 				if (totalProcessed < totalCount) {
-					Thread.sleep(2000);
+					Thread.sleep(200);
 				}
 			}
 
@@ -142,7 +142,7 @@ public class IndustryStandardDetailCrawlerServiceImpl implements IndustryStandar
 				}
 
 				// 单条记录间添加延迟
-				Thread.sleep(1000);
+				Thread.sleep(100);
 
 			} catch (Exception e) {
 				log.error("处理标准 {} 详细信息失败", pk, e);
@@ -301,7 +301,7 @@ public class IndustryStandardDetailCrawlerServiceImpl implements IndustryStandar
 				if (current.tagName().equals("p")) {
 					String text = current.text().trim();
 					log.debug("解析备案信息段落: {}", text);
-					
+
 					if (text.startsWith("备案号：")) {
 						info.setRecordNumber(text.substring(4));
 						log.debug("提取备案号: {}", info.getRecordNumber());
