@@ -80,6 +80,39 @@ export const staticRoutes: Array<RouteRecordRaw> = [
 			title: '标准评估系统',
 			enName: 'Standard Evaluation System'
 		},
+	},
+	{
+		path: '/industry-standard',
+		name: 'industry-standard',
+		component: () => import('/@/views/industry-standard/index.vue'),
+		meta: {
+			isAuth: false, // 无需登录
+			isHide: false,
+			title: '行业标准平台',
+			enName: 'Industry Standard Platform'
+		},
+	},
+	{
+		path: '/industry-standard/query',
+		name: 'industry-standard-query',
+		component: () => import('/@/views/industry-standard/query/index.vue'),
+		meta: {
+			isAuth: false, // 无需登录
+			isHide: false,
+			title: '行业标准查询',
+			enName: 'Industry Standard Query'
+		},
+	},
+	{
+		path: '/industry-standard/detail/:id',
+		name: 'industry-standard-detail',
+		component: () => import('/@/views/industry-standard/detail/[id].vue'),
+		meta: {
+			isAuth: false, // 无需登录
+			isHide: true,
+			title: '标准详情',
+			enName: 'Standard Detail'
+		},
 	}
 ];
 
