@@ -27,6 +27,7 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Matcher;
@@ -138,6 +139,7 @@ public class IndustryStandardDetailCrawlerServiceImpl implements IndustryStandar
 			try {
 				IndustryStandardDetailInfo detailInfo = crawlStandardDetail(pk);
 				if (detailInfo != null) {
+					detailInfo.setUpdateTime(LocalDateTime.now());
 					detailInfos.add(detailInfo);
 				}
 

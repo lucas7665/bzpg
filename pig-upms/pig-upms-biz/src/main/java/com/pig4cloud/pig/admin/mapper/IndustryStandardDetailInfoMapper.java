@@ -18,6 +18,7 @@ package com.pig4cloud.pig.admin.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.pig4cloud.pig.admin.entity.IndustryStandardDetailInfo;
+import org.apache.ibatis.annotations.Insert;
 import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Select;
@@ -86,5 +87,51 @@ public interface IndustryStandardDetailInfoMapper extends BaseMapper<IndustrySta
 			"WHERE di.pk IS NULL AND d.industry_code IS NOT NULL " +
 			"ORDER BY d.industry_code")
 	List<String> getIndustryCodesNeedingDetailInfo();
+
+	/**
+	 * 批量插入或更新标准详细信息（基于 pk 字段的唯一约束）
+	 * 如果 pk 已存在则更新，不存在则插入
+	 */
+	@Insert({
+		"<script>",
+		"INSERT INTO industry_standard_detail_info ",
+		"(pk, publish_date, implement_date, abolish_status, standard_code, revision_type, ",
+		"replace_standard, china_classification, international_classification, technical_committee, ",
+		"approval_department, industry_classification, standard_category, record_number, ",
+		"record_date, record_bulletin, scope, drafting_units, drafting_persons, create_by, update_by, ",
+		"create_time, update_time, remark) VALUES ",
+		"<foreach collection='list' item='item' separator=','>",
+		"(#{item.pk}, #{item.publishDate}, #{item.implementDate}, #{item.abolishStatus}, ",
+		"#{item.standardCode}, #{item.revisionType}, #{item.replaceStandard}, #{item.chinaClassification}, ",
+		"#{item.internationalClassification}, #{item.technicalCommittee}, #{item.approvalDepartment}, ",
+		"#{item.industryClassification}, #{item.standardCategory}, #{item.recordNumber}, #{item.recordDate}, ",
+		"#{item.recordBulletin}, #{item.scope}, #{item.draftingUnits}, #{item.draftingPersons}, ",
+		"#{item.createBy}, #{item.updateBy}, #{item.createTime}, #{item.updateTime}, #{item.remark})",
+		"</foreach>",
+		"ON DUPLICATE KEY UPDATE ",
+		"publish_date = VALUES(publish_date), ",
+		"implement_date = VALUES(implement_date), ",
+		"abolish_status = VALUES(abolish_status), ",
+		"standard_code = VALUES(standard_code), ",
+		"revision_type = VALUES(revision_type), ",
+		"replace_standard = VALUES(replace_standard), ",
+		"china_classification = VALUES(china_classification), ",
+		"international_classification = VALUES(international_classification), ",
+		"technical_committee = VALUES(technical_committee), ",
+		"approval_department = VALUES(approval_department), ",
+		"industry_classification = VALUES(industry_classification), ",
+		"standard_category = VALUES(standard_category), ",
+		"record_number = VALUES(record_number), ",
+		"record_date = VALUES(record_date), ",
+		"record_bulletin = VALUES(record_bulletin), ",
+		"scope = VALUES(scope), ",
+		"drafting_units = VALUES(drafting_units), ",
+		"drafting_persons = VALUES(drafting_persons), ",
+		"update_by = VALUES(update_by), ",
+		"update_time = VALUES(update_time), ",
+		"remark = VALUES(remark)",
+		"</script>"
+	})
+	int insertOrUpdateBatch(@Param("list") List<IndustryStandardDetailInfo> list);
 
 }

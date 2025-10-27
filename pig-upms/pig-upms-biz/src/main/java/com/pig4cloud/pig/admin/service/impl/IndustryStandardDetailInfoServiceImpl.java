@@ -74,9 +74,18 @@ public class IndustryStandardDetailInfoServiceImpl extends ServiceImpl<IndustryS
 		}
 
 		try {
-			// 使用saveOrUpdateBatch避免重复数据
-			boolean result = this.saveOrUpdateBatch(detailInfos);
-			return result ? detailInfos.size() : 0;
+			// 使用自定义的 UPSERT 方法，基于 pk 字段的唯一约束
+			// 如果 pk 已存在则更新，不存在则插入
+			int affectedRows = baseMapper.insertOrUpdateBatch(detailInfos);
+			
+			// UPSERT 返回值说明：
+			// - 插入新记录：返回 1
+			// - 更新已存在记录：返回 2
+			// 我们需要返回实际处理的记录数，不是受影响的行数
+			int actualProcessed = detailInfos.size();
+			
+			log.info("批量保存完成，实际处理 {} 条记录，受影响行数 {} 条", actualProcessed, affectedRows);
+			return actualProcessed;
 		} catch (Exception e) {
 			log.error("批量保存标准详细信息失败", e);
 			return 0;
