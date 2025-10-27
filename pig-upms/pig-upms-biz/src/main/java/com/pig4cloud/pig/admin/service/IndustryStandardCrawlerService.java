@@ -47,4 +47,10 @@ public interface IndustryStandardCrawlerService {
 	 */
 	String crawlAllIndustryStandards();
 
+	/**
+	 * 增量爬取最近一个月的行业标准数据
+	 * @return 执行结果
+	 */
+	String crawlIncrementalIndustryStandards();
+
 }
