@@ -138,7 +138,7 @@ public class IndustryStandardDetailCrawlerServiceImpl implements IndustryStandar
 			try {
 				IndustryStandardDetailInfo detailInfo = crawlStandardDetail(pk);
 				if (detailInfo != null) {
-					detailInfos.add();
+					detailInfos.add(detailInfo);
 				}
 
 				// 单条记录间添加延迟detailInfo
