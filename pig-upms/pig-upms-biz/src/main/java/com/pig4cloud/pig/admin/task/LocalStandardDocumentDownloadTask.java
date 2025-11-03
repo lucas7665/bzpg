@@ -39,28 +39,30 @@ public class LocalStandardDocumentDownloadTask {
      */
     public String downloadAllDocuments() {
         log.info("开始执行地方标准文档下载任务");
-        
+
         try {
-            // 获取需要下载的标准列表
-            List<LocalStandardDetail> pendingList = getPendingDownloadList();
-            log.info("找到 {} 个待下载的地方标准", pendingList.size());
-
-            if (pendingList.isEmpty()) {
-                return "没有待下载的地方标准";
-            }
-
-            // 分批处理
-            int totalBatches = (pendingList.size() + batchSize - 1) / batchSize;
             int successCount = 0;
             int failCount = 0;
             int processedCount = 0;
 
-            for (int i = 0; i < pendingList.size(); i += batchSize) {
-                int currentBatch = (i / batchSize) + 1;
-                int end = Math.min(i + batchSize, pendingList.size());
-                List<LocalStandardDetail> batch = pendingList.subList(i, end);
+            int offset = 0;
+            int batchIndex = 0;
 
-                log.info("处理第 {}/{} 批，共 {} 个标准", currentBatch, totalBatches, batch.size());
+            while (true) {
+                // 分页查询待下载 PK 列表
+                List<String> pks = localStandardDetailService.getPksNeedingDownload(offset, batchSize);
+                if (pks == null || pks.isEmpty()) {
+                    break;
+                }
+
+                // 使用 PK 查询详情列表
+                List<LocalStandardDetail> batch = localStandardDetailService.list(
+                    new LambdaQueryWrapper<LocalStandardDetail>()
+                        .in(LocalStandardDetail::getPk, pks)
+                );
+
+                batchIndex++;
+                log.info("处理第 {} 批，共 {} 个标准", batchIndex, batch.size());
 
                 for (LocalStandardDetail detail : batch) {
                     try {
@@ -72,12 +74,11 @@ public class LocalStandardDocumentDownloadTask {
 
                         processedCount++;
 
-                        // 请求间隔
+                        // 单条请求间隔
                         if (delaySeconds > 0) {
                             Thread.sleep(delaySeconds * 1000);
                         }
 
-                        // 每处理100个记录输出一次进度
                         if (processedCount % 100 == 0) {
                             log.info("已处理 {} 个标准，成功: {}, 失败: {}", processedCount, successCount, failCount);
                         }
@@ -93,13 +94,18 @@ public class LocalStandardDocumentDownloadTask {
                 }
 
                 // 批次间延迟
-                if (currentBatch < totalBatches) {
-                    log.info("批次 {} 完成，等待下一批次...", currentBatch);
-                    Thread.sleep(5000); // 5秒批次间隔
-                }
+                log.info("批次 {} 完成，等待下一批次...", batchIndex);
+                Thread.sleep(5000); // 5秒批次间隔
+
+                // 下一页偏移
+                offset += batchSize;
             }
 
-            String result = String.format("地方标准文档下载任务完成：成功 %d 个，失败 %d 个，总计 %d 个", 
+            if (processedCount == 0) {
+                return "没有待下载的地方标准";
+            }
+
+            String result = String.format("地方标准文档下载任务完成：成功 %d 个，失败 %d 个，总计 %d 个",
                 successCount, failCount, processedCount);
             log.info(result);
             return result;
@@ -117,44 +123,63 @@ public class LocalStandardDocumentDownloadTask {
         log.info("开始执行失败的地方标准下载任务重试");
         
         try {
-            // 获取需要重试的标准列表
-            List<LocalStandardDetail> retryList = getRetryDownloadList();
-            log.info("找到 {} 个需要重试的地方标准", retryList.size());
-
-            if (retryList.isEmpty()) {
-                return "没有需要重试的地方标准下载任务";
-            }
-
             int successCount = 0;
             int failCount = 0;
             int processedCount = 0;
 
-            for (LocalStandardDetail detail : retryList) {
-                try {
-                    if (downloadService.downloadDocumentWithRetry(detail, maxRetries)) {
-                        successCount++;
-                    } else {
+            int offset = 0;
+            int batchIndex = 0;
+
+            while (true) {
+                // 分页查询需要重试的 PK 列表
+                List<String> pks = localStandardDetailService.getPksNeedingRetry(offset, batchSize, maxRetries);
+                if (pks == null || pks.isEmpty()) {
+                    break;
+                }
+
+                List<LocalStandardDetail> batch = localStandardDetailService.list(
+                    new LambdaQueryWrapper<LocalStandardDetail>()
+                        .in(LocalStandardDetail::getPk, pks)
+                );
+
+                batchIndex++;
+                log.info("重试处理第 {} 批，共 {} 个标准", batchIndex, batch.size());
+
+                for (LocalStandardDetail detail : batch) {
+                    try {
+                        if (downloadService.downloadDocumentWithRetry(detail, maxRetries)) {
+                            successCount++;
+                        } else {
+                            failCount++;
+                        }
+
+                        processedCount++;
+
+                        if (delaySeconds > 0) {
+                            Thread.sleep(delaySeconds * 1000);
+                        }
+
+                    } catch (InterruptedException e) {
+                        Thread.currentThread().interrupt();
+                        log.warn("重试任务被中断");
+                        break;
+                    } catch (Exception e) {
+                        log.error("重试标准 {} 时发生异常", detail.getPk(), e);
                         failCount++;
                     }
-
-                    processedCount++;
-
-                    // 请求间隔
-                    if (delaySeconds > 0) {
-                        Thread.sleep(delaySeconds * 1000);
-                    }
-
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                    log.warn("重试任务被中断");
-                    break;
-                } catch (Exception e) {
-                    log.error("重试标准 {} 时发生异常", detail.getPk(), e);
-                    failCount++;
                 }
+
+                log.info("重试批次 {} 完成，等待下一批次...", batchIndex);
+                Thread.sleep(5000);
+
+                offset += batchSize;
             }
 
-            String result = String.format("地方标准重试任务完成：成功 %d 个，失败 %d 个，总计 %d 个", 
+            if (processedCount == 0) {
+                return "没有需要重试的地方标准下载任务";
+            }
+
+            String result = String.format("地方标准重试任务完成：成功 %d 个，失败 %d 个，总计 %d 个",
                 successCount, failCount, processedCount);
             log.info(result);
             return result;

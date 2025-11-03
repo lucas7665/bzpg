@@ -47,7 +47,7 @@ public class LocalStandardDocumentDownloadService {
             // 1. 获取验证码图片
             String imageUrl = VALIDATE_CODE_URL + "?pk=" + pk + "&t=" + System.currentTimeMillis();
             log.debug("获取验证码图片: {}", imageUrl);
-            
+
             byte[] imageBytes = HttpUtil.downloadBytes(imageUrl);
             if (imageBytes == null || imageBytes.length == 0) {
                 log.error("获取验证码图片失败");
@@ -112,7 +112,7 @@ public class LocalStandardDocumentDownloadService {
                 // 5. 下载PDF文件
                 String fileName = generateFileName(detail.getCode());
                 String filePath = downloadDir + fileName;
-                
+
                 // 确保下载目录存在
                 File dir = new File(downloadDir);
                 if (!dir.exists()) {
@@ -121,9 +121,9 @@ public class LocalStandardDocumentDownloadService {
 
                 String downloadUrl = DOWNLOAD_URL + downloadToken;
                 log.debug("开始下载PDF文件: {}", downloadUrl);
-                
+
                 HttpUtil.downloadFile(downloadUrl, filePath);
-                
+
                 // 检查文件是否下载成功
                 File downloadedFile = new File(filePath);
                 if (!downloadedFile.exists() || downloadedFile.length() == 0) {
@@ -182,18 +182,18 @@ public class LocalStandardDocumentDownloadService {
      */
     public boolean downloadDocumentWithRetry(LocalStandardDetail detail, int maxRetries) {
         String pk = detail.getPk();
-        
+
         for (int attempt = 1; attempt <= maxRetries; attempt++) {
             try {
                 log.info("地方标准 {} 第 {} 次下载尝试", pk, attempt);
-                
+
                 if (downloadDocument(detail)) {
                     return true;
                 }
-                
+
                 if (attempt < maxRetries) {
                     // 延迟重试
-                    int delaySeconds = attempt * 30; // 递增延迟：30s, 60s, 90s
+                    int delaySeconds = attempt * 2; // 递增延迟：30s, 60s, 90s
                     log.info("地方标准 {} 下载失败，{} 秒后重试", pk, delaySeconds);
                     Thread.sleep(delaySeconds * 1000);
                     // 失败一次，自增重试次数
@@ -208,7 +208,7 @@ public class LocalStandardDocumentDownloadService {
                 localStandardDocumentService.incrementRetryCount(pk);
             }
         }
-        
+
         log.error("地方标准 {} 下载失败，已达到最大重试次数 {}", pk, maxRetries);
         localStandardDocumentService.updateDownloadStatus(
             pk,
