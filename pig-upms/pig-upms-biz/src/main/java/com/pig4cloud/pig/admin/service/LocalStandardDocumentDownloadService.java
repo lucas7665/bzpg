@@ -5,6 +5,7 @@ import cn.hutool.http.HttpUtil;
 import cn.hutool.json.JSONObject;
 import cn.hutool.json.JSONUtil;
 import com.pig4cloud.pig.admin.entity.LocalStandardDetail;
+import com.pig4cloud.pig.admin.entity.LocalStandardDocument;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,6 +31,7 @@ public class LocalStandardDocumentDownloadService {
     private static final String DOWNLOAD_URL = "https://dbba.sacinfo.org.cn/portal/download/";
 
     private final OCRService ocrService;
+    private final LocalStandardDocumentService localStandardDocumentService;
 
     @Value("${local-standard.download.dir:/tmp/local-standards/}")
     private String downloadDir;
@@ -56,6 +58,15 @@ public class LocalStandardDocumentDownloadService {
             String captchaCode = ocrService.recognizeCaptcha(imageBytes);
             if (StrUtil.isBlank(captchaCode)) {
                 log.error("验证码识别失败");
+                // 识别失败也记录一次失败状态
+                localStandardDocumentService.updateDownloadStatus(
+                    pk,
+                    LocalStandardDocument.DownloadStatus.FAILED.getCode(),
+                    null,
+                    null,
+                    null,
+                    "验证码识别失败"
+                );
                 return false;
             }
             log.debug("地方标准 {} 识别验证码: {}", pk, captchaCode);
@@ -76,9 +87,27 @@ public class LocalStandardDocumentDownloadService {
                 String downloadToken = jsonResponse.getStr("msg");
                 if (StrUtil.isBlank(downloadToken)) {
                     log.error("获取下载token失败");
+                    localStandardDocumentService.updateDownloadStatus(
+                        pk,
+                        LocalStandardDocument.DownloadStatus.FAILED.getCode(),
+                        null,
+                        captchaCode,
+                        null,
+                        "获取下载token失败"
+                    );
                     return false;
                 }
                 log.debug("地方标准 {} 获取下载token: {}", pk, downloadToken);
+
+                // 写入/更新为PENDING状态，记录本次验证码与token
+                localStandardDocumentService.updateDownloadStatus(
+                    pk,
+                    LocalStandardDocument.DownloadStatus.PENDING.getCode(),
+                    null,
+                    captchaCode,
+                    downloadToken,
+                    null
+                );
 
                 // 5. 下载PDF文件
                 String fileName = generateFileName(detail.getCode());
@@ -99,18 +128,51 @@ public class LocalStandardDocumentDownloadService {
                 File downloadedFile = new File(filePath);
                 if (!downloadedFile.exists() || downloadedFile.length() == 0) {
                     log.error("PDF文件下载失败或文件为空");
+                    localStandardDocumentService.updateDownloadStatus(
+                        pk,
+                        LocalStandardDocument.DownloadStatus.FAILED.getCode(),
+                        null,
+                        captchaCode,
+                        downloadToken,
+                        "PDF文件下载失败或文件为空"
+                    );
                     return false;
                 }
 
                 log.info("地方标准 {} 下载成功: {}", pk, filePath);
+                // 成功则更新为SUCCESS并记录文件路径
+                localStandardDocumentService.updateDownloadStatus(
+                    pk,
+                    LocalStandardDocument.DownloadStatus.SUCCESS.getCode(),
+                    filePath,
+                    captchaCode,
+                    downloadToken,
+                    null
+                );
                 return true;
             } else {
                 String errorMsg = jsonResponse.getStr("msg");
                 log.warn("地方标准 {} 验证码校验失败: {}", pk, errorMsg);
+                localStandardDocumentService.updateDownloadStatus(
+                    pk,
+                    LocalStandardDocument.DownloadStatus.FAILED.getCode(),
+                    null,
+                    captchaCode,
+                    null,
+                    errorMsg
+                );
                 return false;
             }
         } catch (Exception e) {
             log.error("地方标准 {} 下载失败", pk, e);
+            localStandardDocumentService.updateDownloadStatus(
+                pk,
+                LocalStandardDocument.DownloadStatus.FAILED.getCode(),
+                null,
+                null,
+                null,
+                e.getMessage()
+            );
             return false;
         }
     }
@@ -134,6 +196,8 @@ public class LocalStandardDocumentDownloadService {
                     int delaySeconds = attempt * 30; // 递增延迟：30s, 60s, 90s
                     log.info("地方标准 {} 下载失败，{} 秒后重试", pk, delaySeconds);
                     Thread.sleep(delaySeconds * 1000);
+                    // 失败一次，自增重试次数
+                    localStandardDocumentService.incrementRetryCount(pk);
                 }
             } catch (InterruptedException e) {
                 Thread.currentThread().interrupt();
@@ -141,10 +205,19 @@ public class LocalStandardDocumentDownloadService {
                 break;
             } catch (Exception e) {
                 log.error("地方标准 {} 第 {} 次下载异常", pk, attempt, e);
+                localStandardDocumentService.incrementRetryCount(pk);
             }
         }
         
         log.error("地方标准 {} 下载失败，已达到最大重试次数 {}", pk, maxRetries);
+        localStandardDocumentService.updateDownloadStatus(
+            pk,
+            LocalStandardDocument.DownloadStatus.FAILED.getCode(),
+            null,
+            null,
+            null,
+            "已达到最大重试次数"
+        );
         return false;
     }
 

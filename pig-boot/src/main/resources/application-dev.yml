@@ -33,9 +33,9 @@ local-standard:
     concurrent-threads: 3  # 并发线程数（同时处理几个城市，建议2-5）
   download:
     dir: /Users/mac/Downloads/local-standards/  # 地方标准文档下载目录
-    batch-size: 50         # 批处理大小
-    retry-count: 3         # 重试次数
-    delay-seconds: 2       # 请求延迟秒数
+    batch-size: 10         # 批处理大小
+    retry-count: 2         # 重试次数
+    delay-seconds: 1       # 请求延迟秒数
 
 # 行业标准爬取配置
 industry-standard:
