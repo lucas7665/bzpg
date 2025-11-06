@@ -123,4 +123,49 @@ public interface LocalStandardDetailMapper extends BaseMapper<LocalStandardDetai
             "WHERE city_code = #{cityCode} " +
             "ORDER BY create_time DESC")
     List<LocalStandardDetail> getStandardsByCityCode(@Param("cityCode") String cityCode);
+
+    /**
+     * 获取城市名称和城市代码的对应关系（去重）
+     * 用于增量爬取时匹配城市分类
+     */
+    @Select("SELECT DISTINCT city, city_code " +
+            "FROM local_standard_detail " +
+            "WHERE city IS NOT NULL " +
+            "AND city != '' " +
+            "AND city_code IS NOT NULL " +
+            "AND city_code != '' " +
+            "ORDER BY city")
+    List<Map<String, String>> getCityNameToCodeMapping();
+
+    /**
+     * 批量查询 pk 对应的 id（用于增量爬取时判断记录是否存在）
+     * @param pks pk 列表
+     * @return pk 和 id 的映射关系列表
+     */
+    @Select({
+        "<script>",
+        "SELECT pk, id FROM local_standard_detail ",
+        "WHERE pk IN ",
+        "<foreach collection='pks' item='pk' open='(' separator=',' close=')'>",
+        "#{pk}",
+        "</foreach>",
+        "</script>"
+    })
+    List<Map<String, Object>> getPkToIdMapping(@Param("pks") List<String> pks);
+
+    /**
+     * 根据 pk 列表批量查询标准详情（用于详细信息爬取）
+     * @param pks pk 列表
+     * @return 标准详情列表
+     */
+    @Select({
+        "<script>",
+        "SELECT * FROM local_standard_detail ",
+        "WHERE pk IN ",
+        "<foreach collection='pks' item='pk' open='(' separator=',' close=')'>",
+        "#{pk}",
+        "</foreach>",
+        "</script>"
+    })
+    List<LocalStandardDetail> getDetailsByPks(@Param("pks") List<String> pks);
 }
