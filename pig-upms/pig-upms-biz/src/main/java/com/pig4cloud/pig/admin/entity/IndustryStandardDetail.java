@@ -171,7 +171,7 @@ public class IndustryStandardDetail extends Model<IndustryStandardDetail> {
 	/**
 	 * 更新时间
 	 */
-	@TableField(fill = FieldFill.UPDATE)
+	@TableField(fill = FieldFill.INSERT_UPDATE)
 	@Schema(description = "更新时间")
 	private LocalDateTime updateTime;
 

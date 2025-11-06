@@ -21,6 +21,7 @@ import com.pig4cloud.pig.admin.dto.StandardQueryResponse;
 import com.pig4cloud.pig.admin.dto.StandardRecord;
 import com.pig4cloud.pig.admin.entity.IndustryCategory;
 import com.pig4cloud.pig.admin.entity.IndustryStandardDetail;
+import com.pig4cloud.pig.admin.mapper.IndustryStandardDetailMapper;
 import com.pig4cloud.pig.admin.service.IndustryCategoryService;
 import com.pig4cloud.pig.admin.service.IndustryStandardCrawlerService;
 import com.pig4cloud.pig.admin.service.IndustryStandardDetailCrawlerService;
@@ -33,7 +34,10 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
@@ -54,6 +58,7 @@ public class IndustryStandardCrawlerServiceImpl implements IndustryStandardCrawl
 	private final IndustryCategoryService categoryService;
 	private final IndustryStandardDetailService detailService;
 	private final IndustryStandardDetailCrawlerService detailCrawlerService;
+	private final IndustryStandardDetailMapper detailMapper;
 	private final ObjectMapper objectMapper = new ObjectMapper();
 
 	private static final String TARGET_URL = "https://hbba.sacinfo.org.cn/stdList";
@@ -281,13 +286,30 @@ public class IndustryStandardCrawlerServiceImpl implements IndustryStandardCrawl
 			if (!allStandards.isEmpty()) {
 				log.info("开始处理 {} 条数据的行业分类关联...", allStandards.size());
 
+				// 第一步：数据去重（基于 pk）
+				Map<String, IndustryStandardDetail> uniqueStandardsMap = new LinkedHashMap<>();
+				for (IndustryStandardDetail standard : allStandards) {
+					String pk = standard.getPk();
+					if (pk != null && !pk.isEmpty()) {
+						// 如果已存在，保留最新的（后爬取的覆盖先爬取的）
+						uniqueStandardsMap.put(pk, standard);
+					}
+				}
+				List<IndustryStandardDetail> uniqueStandards = new ArrayList<>(uniqueStandardsMap.values());
+				log.info("去重后剩余 {} 条记录（去重前 {} 条）", uniqueStandards.size(), allStandards.size());
+
+				if (uniqueStandards.isEmpty()) {
+					log.info("去重后没有有效数据");
+					return "0"; // 成功，但没有有效数据
+				}
+
 				// 获取所有行业分类用于关联
 				List<IndustryCategory> categories = categoryService.list();
 				Map<String, IndustryCategory> categoryMap = categories.stream()
 					.collect(Collectors.toMap(IndustryCategory::getIndustryCode, Function.identity()));
 
 				// 设置每条数据的行业分类关联
-				for (IndustryStandardDetail standard : allStandards) {
+				for (IndustryStandardDetail standard : uniqueStandards) {
 					try {
 						String industryCode = extractIndustryCode(standard);
 
@@ -308,9 +330,122 @@ public class IndustryStandardCrawlerServiceImpl implements IndustryStandardCrawl
 					}
 				}
 
-				// 批量保存（MyBatis-Plus 会自动判断插入或更新）
-				detailService.saveOrUpdateBatch(allStandards);
-				log.info("标准数据保存完成，共处理 {} 条记录", allStandards.size());
+				// 第二步：查询数据库中已存在的记录，分离插入和更新
+				log.info("开始保存标准数据，共 {} 条记录", uniqueStandards.size());
+
+				// 收集所有 pk
+				List<String> allPks = uniqueStandards.stream()
+					.map(IndustryStandardDetail::getPk)
+					.filter(pk -> pk != null && !pk.isEmpty())
+					.collect(Collectors.toList());
+
+				// 查询数据库中已存在的记录（获取 pk -> id 映射）
+				Map<String, Long> existingPkToIdMap = new HashMap<>();
+				if (!allPks.isEmpty()) {
+					// 分批查询，避免 IN 子句过长
+					int queryBatchSize = 1000;
+					for (int i = 0; i < allPks.size(); i += queryBatchSize) {
+						int end = Math.min(i + queryBatchSize, allPks.size());
+						List<String> batchPks = allPks.subList(i, end);
+						List<Map<String, Object>> mappings = detailMapper.getPkToIdMapping(batchPks);
+						for (Map<String, Object> mapping : mappings) {
+							String pk = (String) mapping.get("pk");
+							Object idObj = mapping.get("id");
+							if (pk != null && idObj != null) {
+								Long id = idObj instanceof Long ? (Long) idObj : ((Number) idObj).longValue();
+								existingPkToIdMap.put(pk, id);
+							}
+						}
+					}
+					log.info("查询到数据库中已存在 {} 条记录", existingPkToIdMap.size());
+				}
+
+				// 分离需要插入和更新的数据
+				List<IndustryStandardDetail> toInsert = new ArrayList<>();
+				List<IndustryStandardDetail> toUpdate = new ArrayList<>();
+
+				// 当前时间，用于插入和更新操作
+				LocalDateTime now = LocalDateTime.now();
+
+				for (IndustryStandardDetail standard : uniqueStandards) {
+					String pk = standard.getPk();
+					if (pk != null && !pk.isEmpty()) {
+						Long existingId = existingPkToIdMap.get(pk);
+						if (existingId != null) {
+							// 已存在，设置 id 用于更新
+							standard.setId(existingId);
+							// 手动设置更新时间和更新人，确保 update_time 字段会被更新
+							standard.setUpdateTime(now);
+							standard.setUpdateBy("sys_incremental_update");
+							toUpdate.add(standard);
+						} else {
+							// 不存在，需要插入
+							// 手动设置更新时间和更新人，确保插入时也有 update_time
+							standard.setUpdateTime(now);
+							standard.setUpdateBy("sys_incremental_insert");
+							toInsert.add(standard);
+						}
+					}
+				}
+
+				log.info("需要插入 {} 条，更新 {} 条", toInsert.size(), toUpdate.size());
+
+				// 分批插入新数据
+				int totalInserted = 0;
+				int totalUpdated = 0;
+				int batchSize = 500;
+
+				if (!toInsert.isEmpty()) {
+					for (int i = 0; i < toInsert.size(); i += batchSize) {
+						int end = Math.min(i + batchSize, toInsert.size());
+						List<IndustryStandardDetail> batch = toInsert.subList(i, end);
+						try {
+							detailService.saveBatch(batch);
+							totalInserted += batch.size();
+							log.info("批次 {} 插入成功，共 {} 条", (i / batchSize + 1), batch.size());
+						} catch (Exception e) {
+							log.error("批次 {} 批量插入失败，降级为逐条插入", (i / batchSize + 1), e);
+							int inserted = 0;
+							for (IndustryStandardDetail standard : batch) {
+								try {
+									detailService.save(standard);
+									inserted++;
+								} catch (Exception ex) {
+									log.error("插入标准 {} 失败", standard.getPk(), ex);
+								}
+							}
+							totalInserted += inserted;
+						}
+					}
+				}
+
+				// 分批更新已存在的数据
+				if (!toUpdate.isEmpty()) {
+					for (int i = 0; i < toUpdate.size(); i += batchSize) {
+						int end = Math.min(i + batchSize, toUpdate.size());
+						List<IndustryStandardDetail> batch = toUpdate.subList(i, end);
+						try {
+							detailService.updateBatchById(batch);
+							totalUpdated += batch.size();
+							log.debug("批次 {} 更新成功，共 {} 条", (i / batchSize + 1), batch.size());
+						} catch (Exception e) {
+							log.error("批次 {} 批量更新失败，降级为逐条更新", (i / batchSize + 1), e);
+							int updated = 0;
+							for (IndustryStandardDetail standard : batch) {
+								try {
+									detailService.updateById(standard);
+									updated++;
+								} catch (Exception ex) {
+									log.error("更新标准 {} 失败", standard.getPk(), ex);
+								}
+							}
+							totalUpdated += updated;
+						}
+					}
+				}
+
+				log.info("标准数据保存完成：插入 {} 条，更新 {} 条，总计 {} 条",
+					totalInserted, totalUpdated, totalInserted + totalUpdated);
 			} else {
 				log.info("最近一个月没有新数据");
 			}
