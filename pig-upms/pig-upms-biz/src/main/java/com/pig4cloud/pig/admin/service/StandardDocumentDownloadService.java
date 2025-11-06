@@ -47,10 +47,10 @@ public class StandardDocumentDownloadService {
             // 1. 获取验证码图片
             String imageUrl = VALIDATE_CODE_URL + "?pk=" + pk + "&t=" + System.currentTimeMillis();
             log.debug("获取验证码图片: {}", imageUrl);
-            
+
             byte[] imageBytes = HttpUtil.downloadBytes(imageUrl);
             if (imageBytes == null || imageBytes.length == 0) {
-                standardDocumentService.updateDownloadStatus(pk, StandardDocument.DownloadStatus.FAILED.getCode(), 
+                standardDocumentService.updateDownloadStatus(pk, StandardDocument.DownloadStatus.FAILED.getCode(),
                     null, null, null, "获取验证码图片失败");
                 return false;
             }
@@ -58,7 +58,7 @@ public class StandardDocumentDownloadService {
             // 2. OCR识别验证码
             String captchaCode = ocrService.recognizeCaptcha(imageBytes);
             if (StrUtil.isBlank(captchaCode)) {
-                standardDocumentService.updateDownloadStatus(pk, StandardDocument.DownloadStatus.FAILED.getCode(), 
+                standardDocumentService.updateDownloadStatus(pk, StandardDocument.DownloadStatus.FAILED.getCode(),
                     null, null, null, "验证码识别失败");
                 return false;
             }
@@ -79,7 +79,7 @@ public class StandardDocumentDownloadService {
                 // 4. 获取下载token
                 String downloadToken = jsonResponse.getStr("msg");
                 if (StrUtil.isBlank(downloadToken)) {
-                    standardDocumentService.updateDownloadStatus(pk, StandardDocument.DownloadStatus.FAILED.getCode(), 
+                    standardDocumentService.updateDownloadStatus(pk, StandardDocument.DownloadStatus.FAILED.getCode(),
                         null, captchaCode, null, "获取下载token失败");
                     return false;
                 }
@@ -88,7 +88,7 @@ public class StandardDocumentDownloadService {
                 // 5. 下载PDF文件
                 String fileName = generateFileName(detail.getCode());
                 String filePath = downloadDir + fileName;
-                
+
                 // 确保下载目录存在
                 File dir = new File(downloadDir);
                 if (!dir.exists()) {
@@ -97,32 +97,32 @@ public class StandardDocumentDownloadService {
 
                 String downloadUrl = DOWNLOAD_URL + downloadToken;
                 log.debug("开始下载PDF文件: {}", downloadUrl);
-                
+
                 HttpUtil.downloadFile(downloadUrl, filePath);
-                
+
                 // 检查文件是否下载成功
                 File downloadedFile = new File(filePath);
                 if (!downloadedFile.exists() || downloadedFile.length() == 0) {
-                    standardDocumentService.updateDownloadStatus(pk, StandardDocument.DownloadStatus.FAILED.getCode(), 
+                    standardDocumentService.updateDownloadStatus(pk, StandardDocument.DownloadStatus.FAILED.getCode(),
                         null, captchaCode, downloadToken, "PDF文件下载失败或文件为空");
                     return false;
                 }
 
                 // 6. 保存下载记录
-                standardDocumentService.updateDownloadStatus(pk, StandardDocument.DownloadStatus.SUCCESS.getCode(), 
+                standardDocumentService.updateDownloadStatus(pk, StandardDocument.DownloadStatus.SUCCESS.getCode(),
                     filePath, captchaCode, downloadToken, null);
-                
+
                 log.info("标准 {} 下载成功: {}", pk, filePath);
                 return true;
             } else {
                 String errorMsg = jsonResponse.getStr("msg");
-                standardDocumentService.updateDownloadStatus(pk, StandardDocument.DownloadStatus.FAILED.getCode(), 
+                standardDocumentService.updateDownloadStatus(pk, StandardDocument.DownloadStatus.FAILED.getCode(),
                     null, captchaCode, null, "验证码校验失败: " + errorMsg);
                 log.warn("标准 {} 验证码校验失败: {}", pk, errorMsg);
                 return false;
             }
         } catch (Exception e) {
-            standardDocumentService.updateDownloadStatus(pk, StandardDocument.DownloadStatus.FAILED.getCode(), 
+            standardDocumentService.updateDownloadStatus(pk, StandardDocument.DownloadStatus.FAILED.getCode(),
                 null, null, null, "下载异常: " + e.getMessage());
             log.error("标准 {} 下载失败", pk, e);
             return false;
@@ -134,21 +134,21 @@ public class StandardDocumentDownloadService {
      */
     public boolean downloadDocumentWithRetry(IndustryStandardDetail detail, int maxRetries) {
         String pk = detail.getPk();
-        
+
         for (int attempt = 1; attempt <= maxRetries; attempt++) {
             try {
                 log.info("标准 {} 第 {} 次下载尝试", pk, attempt);
-                
+
                 if (downloadDocument(detail)) {
                     return true;
                 }
-                
+
                 if (attempt < maxRetries) {
                     // 增加重试次数
                     standardDocumentService.incrementRetryCount(pk);
-                    
+
                     // 延迟重试
-                    int delaySeconds = attempt * 30; // 递增延迟：30s, 60s, 90s
+                    int delaySeconds = 1; // 递增延迟：30s, 60s, 90s
                     log.info("标准 {} 下载失败，{} 秒后重试", pk, delaySeconds);
                     Thread.sleep(delaySeconds * 1000);
                 }
@@ -160,7 +160,7 @@ public class StandardDocumentDownloadService {
                 log.error("标准 {} 第 {} 次下载异常", pk, attempt, e);
             }
         }
-        
+
         log.error("标准 {} 下载失败，已达到最大重试次数 {}", pk, maxRetries);
         return false;
     }

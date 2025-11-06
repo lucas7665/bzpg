@@ -54,4 +54,19 @@ public interface StandardDocumentMapper extends BaseMapper<StandardDocument> {
             "WHERE download_status = 'FAILED' " +
             "AND retry_count < #{maxRetries}")
     long getCountNeedingRetry(@Param("maxRetries") int maxRetries);
+
+    /**
+     * 查询指定PK列表中已成功下载的PK列表
+     * @param pks PK列表
+     * @return 已成功下载的PK列表
+     */
+    @Select("<script>" +
+            "SELECT pk FROM standard_document " +
+            "WHERE pk IN " +
+            "<foreach collection='pks' item='pk' open='(' separator=',' close=')'>" +
+            "#{pk}" +
+            "</foreach> " +
+            "AND download_status = 'SUCCESS'" +
+            "</script>")
+    List<String> getDownloadedPks(@Param("pks") List<String> pks);
 }

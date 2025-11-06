@@ -21,11 +21,14 @@ import com.pig4cloud.pig.admin.dto.StandardQueryResponse;
 import com.pig4cloud.pig.admin.dto.StandardRecord;
 import com.pig4cloud.pig.admin.entity.IndustryCategory;
 import com.pig4cloud.pig.admin.entity.IndustryStandardDetail;
+import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.pig4cloud.pig.admin.mapper.IndustryStandardDetailMapper;
+import com.pig4cloud.pig.admin.mapper.StandardDocumentMapper;
 import com.pig4cloud.pig.admin.service.IndustryCategoryService;
 import com.pig4cloud.pig.admin.service.IndustryStandardCrawlerService;
 import com.pig4cloud.pig.admin.service.IndustryStandardDetailCrawlerService;
 import com.pig4cloud.pig.admin.service.IndustryStandardDetailService;
+import com.pig4cloud.pig.admin.service.StandardDocumentDownloadService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.jsoup.Jsoup;
@@ -37,9 +40,11 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -59,6 +64,8 @@ public class IndustryStandardCrawlerServiceImpl implements IndustryStandardCrawl
 	private final IndustryStandardDetailService detailService;
 	private final IndustryStandardDetailCrawlerService detailCrawlerService;
 	private final IndustryStandardDetailMapper detailMapper;
+	private final StandardDocumentDownloadService documentDownloadService;
+	private final StandardDocumentMapper documentMapper;
 	private final ObjectMapper objectMapper = new ObjectMapper();
 
 	private static final String TARGET_URL = "https://hbba.sacinfo.org.cn/stdList";
@@ -283,10 +290,11 @@ public class IndustryStandardCrawlerServiceImpl implements IndustryStandardCrawl
 			}
 
 			// 处理爬取到的数据：设置行业分类关联
+			// 第一步：数据去重（基于 pk）
+			List<IndustryStandardDetail> uniqueStandards = new ArrayList<>();
 			if (!allStandards.isEmpty()) {
 				log.info("开始处理 {} 条数据的行业分类关联...", allStandards.size());
 
-				// 第一步：数据去重（基于 pk）
 				Map<String, IndustryStandardDetail> uniqueStandardsMap = new LinkedHashMap<>();
 				for (IndustryStandardDetail standard : allStandards) {
 					String pk = standard.getPk();
@@ -295,7 +303,7 @@ public class IndustryStandardCrawlerServiceImpl implements IndustryStandardCrawl
 						uniqueStandardsMap.put(pk, standard);
 					}
 				}
-				List<IndustryStandardDetail> uniqueStandards = new ArrayList<>(uniqueStandardsMap.values());
+				uniqueStandards = new ArrayList<>(uniqueStandardsMap.values());
 				log.info("去重后剩余 {} 条记录（去重前 {} 条）", uniqueStandards.size(), allStandards.size());
 
 				if (uniqueStandards.isEmpty()) {
@@ -488,6 +496,87 @@ public class IndustryStandardCrawlerServiceImpl implements IndustryStandardCrawl
 				}
 
 				log.info("详细信息爬取完成，共处理 {} 条记录", totalProcessed);
+			}
+
+			// 第三阶段：下载增量数据的文档
+			if (uniqueStandards != null && !uniqueStandards.isEmpty()) {
+				log.info("开始下载增量数据的文档，共 {} 条标准", uniqueStandards.size());
+
+				// 收集所有增量数据的 pk
+				List<String> allPks = uniqueStandards.stream()
+					.map(IndustryStandardDetail::getPk)
+					.filter(pk -> pk != null && !pk.isEmpty())
+					.collect(Collectors.toList());
+
+				if (!allPks.isEmpty()) {
+					// 查询已成功下载的 pk
+					Set<String> downloadedPks = new HashSet<>();
+					try {
+						// 分批查询，避免 IN 子句过长
+						int batchSize = 500;
+						for (int i = 0; i < allPks.size(); i += batchSize) {
+							int end = Math.min(i + batchSize, allPks.size());
+							List<String> batchPks = allPks.subList(i, end);
+							List<String> batchDownloaded = documentMapper.getDownloadedPks(batchPks);
+							downloadedPks.addAll(batchDownloaded);
+						}
+						log.info("查询到 {} 个已下载的文档", downloadedPks.size());
+					} catch (Exception e) {
+						log.error("查询已下载文档列表失败", e);
+					}
+
+					// 过滤出需要下载的 pk
+					List<String> pksToDownload = allPks.stream()
+						.filter(pk -> !downloadedPks.contains(pk))
+						.collect(Collectors.toList());
+
+					log.info("需要下载的文档：{} 个（已下载: {} 个，待下载: {} 个）",
+						allPks.size(), downloadedPks.size(), pksToDownload.size());
+
+					if (!pksToDownload.isEmpty()) {
+						// 根据 pk 查询详情列表
+						List<IndustryStandardDetail> detailsToDownload = detailService.list(
+							new LambdaQueryWrapper<IndustryStandardDetail>()
+								.in(IndustryStandardDetail::getPk, pksToDownload)
+						);
+
+						log.info("开始下载 {} 个文档", detailsToDownload.size());
+
+						int downloadSuccessCount = 0;
+						int downloadFailCount = 0;
+						int maxRetries = 3; // 最大重试次数
+						int delaySeconds = 1; // 下载间隔（秒）
+
+						for (IndustryStandardDetail detail : detailsToDownload) {
+							try {
+								if (documentDownloadService.downloadDocumentWithRetry(detail, maxRetries)) {
+									downloadSuccessCount++;
+									log.debug("文档下载成功: {}", detail.getPk());
+								} else {
+									downloadFailCount++;
+									log.warn("文档下载失败: {}", detail.getPk());
+								}
+
+								// 下载间隔，避免请求过快
+								if (delaySeconds > 0) {
+									Thread.sleep(delaySeconds * 1000);
+								}
+							} catch (InterruptedException e) {
+								Thread.currentThread().interrupt();
+								log.warn("文档下载任务被中断");
+								break;
+							} catch (Exception e) {
+								downloadFailCount++;
+								log.error("下载文档异常: {}", detail.getPk(), e);
+							}
+						}
+
+						log.info("文档下载完成：成功 {} 个，失败 {} 个，总计 {} 个",
+							downloadSuccessCount, downloadFailCount, detailsToDownload.size());
+					} else {
+						log.info("所有文档都已下载，无需重新下载");
+					}
+				}
 			}
 
 			log.info("增量爬取任务完成：共处理 {} 条标准数据", allStandards.size());
