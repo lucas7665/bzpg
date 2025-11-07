@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>标准查询 - 标准AI立方</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/query.css">
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <header class="header">
+        <div class="container">
+            <div class="logo-section">
+                <div class="logo">标准AI立方</div>
+                <div class="tagline">智能标准化服务平台</div>
+            </div>
+            <nav class="main-nav">
+                <a href="index.html" class="nav-item">首页</a>
+                <a href="standard-query.html" class="nav-item active">标准查询</a>
+                <a href="standard-ai.html" class="nav-item">标准大模型</a>
+                <a href="standard-system.html" class="nav-item">标准体系</a>
+                <a href="visualization.html" class="nav-item">标准可视化</a>
+            </nav>
+            <div class="user-section">
+                <a href="login.html" class="btn-primary">登录</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主要内容 -->
+    <main class="main-content">
+        <!-- 查询区域 -->
+        <section class="query-section">
+            <div class="container">
+                <h1 class="page-title">标准查询</h1>
+                
+                <!-- 标签页 -->
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="industry">行业标准</button>
+                    <button class="tab-btn" data-tab="local">地方标准</button>
+                </div>
+
+                <!-- 搜索框 -->
+                <div class="search-container">
+                    <div class="search-box-large">
+                        <input type="text" placeholder="请输入标准号、标准名称或关键词..." class="search-input-large">
+                        <button class="search-btn-large">搜索</button>
+                    </div>
+                </div>
+
+                <!-- 高级筛选 -->
+                <div class="filter-section">
+                    <div class="filter-header">
+                        <span>高级筛选</span>
+                        <button class="toggle-filter">展开</button>
+                    </div>
+                    <div class="filter-content" style="display: none;">
+                        <div class="filter-row">
+                            <div class="filter-item">
+                                <label>标准状态</label>
+                                <select class="filter-select">
+                                    <option value="">全部</option>
+                                    <option value="current">现行</option>
+                                    <option value="revised">修订中</option>
+                                    <option value="abolished">废止</option>
+                                </select>
+                            </div>
+                            <div class="filter-item">
+                                <label>行业分类</label>
+                                <select class="filter-select">
+                                    <option value="">全部</option>
+                                    <option value="AQ">安全生产</option>
+                                    <option value="BB">包装</option>
+                                    <!-- 更多选项 -->
+                                </select>
+                            </div>
+                            <div class="filter-item">
+                                <label>发布日期</label>
+                                <input type="date" class="filter-input">
+                            </div>
+                            <div class="filter-item">
+                                <label>负责部门</label>
+                                <input type="text" class="filter-input" placeholder="请输入部门名称">
+                            </div>
+                        </div>
+                        <div class="filter-actions">
+                            <button class="btn btn-primary">应用筛选</button>
+                            <button class="btn btn-secondary">重置</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 查询结果 -->
+                <div class="results-section">
+                    <div class="results-header">
+                        <div class="results-count">找到 <strong>1,234</strong> 条结果</div>
+                        <div class="results-sort">
+                            <label>排序：</label>
+                            <select class="sort-select">
+                                <option value="relevance">相关度</option>
+                                <option value="date-desc">发布日期（最新）</option>
+                                <option value="date-asc">发布日期（最早）</option>
+                                <option value="code">标准号</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- 结果列表 -->
+                    <div class="results-list">
+                        <!-- 结果项 -->
+                        <div class="result-item">
+                            <div class="result-header">
+                                <h3 class="result-title">
+                                    <a href="standard-detail.html">GB/T 19488-2004 电子政务数据元 第1部分 基础</a>
+                                </h3>
+                                <span class="result-status status-current">现行</span>
+                            </div>
+                            <div class="result-meta">
+                                <span class="meta-item">标准号：GB/T 19488-2004</span>
+                                <span class="meta-item">发布日期：2004-04-30</span>
+                                <span class="meta-item">实施日期：2004-10-01</span>
+                                <span class="meta-item">行业：信息技术</span>
+                            </div>
+                            <div class="result-desc">
+                                本标准规定了电子政务数据元的基本概念和分类、电子政务数据元的描述方法、规范了电子政务数据元设计、注册和管理要求...
+                            </div>
+                            <div class="result-actions">
+                                <a href="standard-detail.html" class="action-link">查看详情</a>
+                                <a href="#" class="action-link">收藏</a>
+                                <a href="#" class="action-link">跟踪</a>
+                            </div>
+                        </div>
+
+                        <div class="result-item">
+                            <div class="result-header">
+                                <h3 class="result-title">
+                                    <a href="standard-detail.html">GB/T 19488-2004 电子政务数据元 第2部分 公共数据元</a>
+                                </h3>
+                                <span class="result-status status-current">现行</span>
+                            </div>
+                            <div class="result-meta">
+                                <span class="meta-item">标准号：GB/T 19488-2004</span>
+                                <span class="meta-item">发布日期：2004-04-30</span>
+                                <span class="meta-item">实施日期：2004-10-01</span>
+                                <span class="meta-item">行业：信息技术</span>
+                            </div>
+                            <div class="result-desc">
+                                本标准规定了电子政务公共数据元的基本概念和分类、电子政务数据元的描述方法...
+                            </div>
+                            <div class="result-actions">
+                                <a href="standard-detail.html" class="action-link">查看详情</a>
+                                <a href="#" class="action-link">收藏</a>
+                                <a href="#" class="action-link">跟踪</a>
+                            </div>
+                        </div>
+
+                        <!-- 更多结果项... -->
+                    </div>
+
+                    <!-- 分页 -->
+                    <div class="pagination">
+                        <button class="page-btn" disabled>上一页</button>
+                        <button class="page-btn active">1</button>
+                        <button class="page-btn">2</button>
+                        <button class="page-btn">3</button>
+                        <button class="page-btn">4</button>
+                        <button class="page-btn">5</button>
+                        <button class="page-btn">下一页</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>关于我们</h4>
+                    <p>标准AI立方是一个基于AI技术的智能标准化服务平台</p>
+                </div>
+                <div class="footer-section">
+                    <h4>快速链接</h4>
+                    <a href="standard-query.html">标准查询</a>
+                    <a href="standard-ai.html">标准大模型</a>
+                    <a href="standard-system.html">标准体系</a>
+                </div>
+                <div class="footer-section">
+                    <h4>联系我们</h4>
+                    <p>邮箱: contact@example.com</p>
+                    <p>电话: 400-xxx-xxxx</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 标准AI立方. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/query.js"></script>
+</body>
+</html>
+

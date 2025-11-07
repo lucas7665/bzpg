@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>标准体系 - 标准AI立方</title>
+    <link rel="stylesheet" href="css/common.css">
+    <link rel="stylesheet" href="css/system.css">
+</head>
+<body>
+    <!-- 顶部导航 -->
+    <header class="header">
+        <div class="container">
+            <div class="logo-section">
+                <div class="logo">标准AI立方</div>
+                <div class="tagline">智能标准化服务平台</div>
+            </div>
+            <nav class="main-nav">
+                <a href="index.html" class="nav-item">首页</a>
+                <a href="standard-query.html" class="nav-item">标准查询</a>
+                <a href="standard-ai.html" class="nav-item">标准大模型</a>
+                <a href="standard-system.html" class="nav-item active">标准体系</a>
+                <a href="visualization.html" class="nav-item">标准可视化</a>
+            </nav>
+            <div class="user-section">
+                <a href="login.html" class="btn-primary">登录</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- 主要内容 -->
+    <main class="main-content">
+        <div class="container">
+            <h1 class="page-title">标准体系</h1>
+            <p class="page-subtitle">构建和管理标准体系，实现标准的系统化组织和管理</p>
+
+            <!-- 功能标签 -->
+            <div class="system-tabs">
+                <button class="system-tab active" data-tab="custom">标准体系定制</button>
+                <button class="system-tab" data-tab="domain">领域标准体系</button>
+                <button class="system-tab" data-tab="industry">行业标准体系</button>
+            </div>
+
+            <!-- 标准体系定制 -->
+            <div class="tab-content active" id="custom">
+                <div class="system-actions">
+                    <button class="btn btn-primary">创建新体系</button>
+                    <div class="search-box-small">
+                        <input type="text" placeholder="搜索标准体系..." class="search-input-small">
+                        <button class="search-btn-small">搜索</button>
+                    </div>
+                </div>
+
+                <div class="system-list">
+                    <div class="system-card">
+                        <div class="system-header">
+                            <h3 class="system-name">电子政务标准体系</h3>
+                            <div class="system-actions-small">
+                                <button class="icon-btn" title="编辑">✏️</button>
+                                <button class="icon-btn" title="删除">🗑️</button>
+                            </div>
+                        </div>
+                        <div class="system-info">
+                            <span class="info-item">标准数量：156</span>
+                            <span class="info-item">创建时间：2025-01-10</span>
+                            <span class="info-item">更新时间：2025-01-15</span>
+                        </div>
+                        <div class="system-desc">
+                            涵盖电子政务数据元、数据交换、信息安全等相关标准
+                        </div>
+                        <div class="system-footer">
+                            <a href="#" class="link-btn">查看详情</a>
+                            <a href="#" class="link-btn">编辑体系</a>
+                        </div>
+                    </div>
+
+                    <div class="system-card">
+                        <div class="system-header">
+                            <h3 class="system-name">智慧城市标准体系</h3>
+                            <div class="system-actions-small">
+                                <button class="icon-btn" title="编辑">✏️</button>
+                                <button class="icon-btn" title="删除">🗑️</button>
+                            </div>
+                        </div>
+                        <div class="system-info">
+                            <span class="info-item">标准数量：89</span>
+                            <span class="info-item">创建时间：2025-01-08</span>
+                            <span class="info-item">更新时间：2025-01-12</span>
+                        </div>
+                        <div class="system-desc">
+                            包含智慧城市基础设施、数据管理、应用服务等标准
+                        </div>
+                        <div class="system-footer">
+                            <a href="#" class="link-btn">查看详情</a>
+                            <a href="#" class="link-btn">编辑体系</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 领域标准体系 -->
+            <div class="tab-content" id="domain" style="display: none;">
+                <div class="domain-grid">
+                    <div class="domain-card">
+                        <div class="domain-icon">🏛️</div>
+                        <h3 class="domain-name">电子政务</h3>
+                        <p class="domain-desc">电子政务相关标准体系</p>
+                        <div class="domain-count">156个标准</div>
+                        <a href="#" class="domain-link">查看体系 →</a>
+                    </div>
+                    <div class="domain-card">
+                        <div class="domain-icon">🏙️</div>
+                        <h3 class="domain-name">智慧城市</h3>
+                        <p class="domain-desc">智慧城市相关标准体系</p>
+                        <div class="domain-count">89个标准</div>
+                        <a href="#" class="domain-link">查看体系 →</a>
+                    </div>
+                    <div class="domain-card">
+                        <div class="domain-icon">🔐</div>
+                        <h3 class="domain-name">信息安全</h3>
+                        <p class="domain-desc">信息安全相关标准体系</p>
+                        <div class="domain-count">234个标准</div>
+                        <a href="#" class="domain-link">查看体系 →</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 行业标准体系 -->
+            <div class="tab-content" id="industry" style="display: none;">
+                <div class="industry-list">
+                    <div class="industry-item">
+                        <div class="industry-code">AQ</div>
+                        <div class="industry-info">
+                            <h4 class="industry-name">安全生产</h4>
+                            <p class="industry-count">387个标准</p>
+                        </div>
+                        <a href="#" class="industry-link">查看 →</a>
+                    </div>
+                    <div class="industry-item">
+                        <div class="industry-code">BB</div>
+                        <div class="industry-info">
+                            <h4 class="industry-name">包装</h4>
+                            <p class="industry-count">156个标准</p>
+                        </div>
+                        <a href="#" class="industry-link">查看 →</a>
+                    </div>
+                    <div class="industry-item">
+                        <div class="industry-code">XX</div>
+                        <div class="industry-info">
+                            <h4 class="industry-name">信息技术</h4>
+                            <p class="industry-count">523个标准</p>
+                        </div>
+                        <a href="#" class="industry-link">查看 →</a>
+                    </div>
+                    <!-- 更多行业... -->
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- 页脚 -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <h4>关于我们</h4>
+                    <p>标准AI立方是一个基于AI技术的智能标准化服务平台</p>
+                </div>
+                <div class="footer-section">
+                    <h4>快速链接</h4>
+                    <a href="standard-query.html">标准查询</a>
+                    <a href="standard-ai.html">标准大模型</a>
+                    <a href="standard-system.html">标准体系</a>
+                </div>
+                <div class="footer-section">
+                    <h4>联系我们</h4>
+                    <p>邮箱: contact@example.com</p>
+                    <p>电话: 400-xxx-xxxx</p>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2025 标准AI立方. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="js/system.js"></script>
+</body>
+</html>
+
