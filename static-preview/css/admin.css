@@ -220,6 +220,88 @@
     background: var(--secondary-color);
 }
 
+/* 体系管理样式 */
+.system-list-admin {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.system-card-admin {
+    background: #fff;
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    transition: all 0.3s;
+}
+
+.system-card-admin:hover {
+    box-shadow: var(--shadow-hover);
+    transform: translateY(-2px);
+}
+
+.system-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 15px;
+    gap: 20px;
+}
+
+.system-info-main {
+    flex: 1;
+}
+
+.system-name-admin {
+    font-size: 20px;
+    margin-bottom: 10px;
+    color: var(--text-color);
+}
+
+.system-meta-admin {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: center;
+}
+
+.meta-badge-admin {
+    padding: 4px 12px;
+    background: var(--accent-color);
+    color: var(--primary-color);
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.meta-item-admin {
+    font-size: 14px;
+    color: var(--text-light);
+}
+
+.system-actions-admin {
+    display: flex;
+    gap: 10px;
+    flex-shrink: 0;
+}
+
+.system-desc-admin {
+    color: var(--text-light);
+    line-height: 1.6;
+    font-size: 14px;
+    padding-top: 15px;
+    border-top: 1px solid var(--border-color);
+}
+
+.btn-danger {
+    background: var(--danger-color);
+    color: #fff;
+}
+
+.btn-danger:hover {
+    background: #c82333;
+}
+
 /* 响应式 */
 @media (max-width: 768px) {
     .sidebar {

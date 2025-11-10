@@ -6,6 +6,45 @@
     color: var(--text-color);
 }
 
+/* 快速筛选标签 */
+.quick-filters {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 15px;
+    background: var(--bg-light);
+    border-radius: 8px;
+}
+
+.filter-label {
+    font-size: 14px;
+    color: var(--text-light);
+    font-weight: 500;
+}
+
+.filter-tag {
+    padding: 6px 15px;
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s;
+    color: var(--text-color);
+}
+
+.filter-tag:hover {
+    border-color: var(--primary-color);
+    color: var(--primary-color);
+}
+
+.filter-tag.active {
+    background: var(--primary-color);
+    color: #fff;
+    border-color: var(--primary-color);
+}
+
 /* 标签页 */
 .tabs {
     display: flex;
@@ -131,6 +170,30 @@
     outline: none;
 }
 
+.date-range {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.date-range .date-input {
+    flex: 1;
+}
+
+.date-range span {
+    color: var(--text-light);
+    font-size: 14px;
+}
+
+.toggle-filter .arrow {
+    display: inline-block;
+    transition: transform 0.3s;
+}
+
+.toggle-filter.active .arrow {
+    transform: rotate(180deg);
+}
+
 .filter-actions {
     display: flex;
     gap: 10px;
@@ -148,6 +211,8 @@
     margin-bottom: 20px;
     padding-bottom: 15px;
     border-bottom: 1px solid var(--border-color);
+    flex-wrap: wrap;
+    gap: 15px;
 }
 
 .results-count {
@@ -158,6 +223,48 @@
 .results-count strong {
     color: var(--primary-color);
     font-size: 18px;
+}
+
+.result-tip {
+    font-size: 12px;
+    color: var(--text-light);
+    margin-left: 10px;
+}
+
+.results-actions {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.view-toggle {
+    display: flex;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.view-btn {
+    padding: 6px 12px;
+    background: #fff;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    transition: all 0.3s;
+}
+
+.view-btn.active {
+    background: var(--primary-color);
+    color: #fff;
+}
+
+.view-btn:hover:not(.active) {
+    background: var(--bg-light);
+}
+
+.btn-sm {
+    padding: 6px 15px;
+    font-size: 13px;
 }
 
 .results-sort {

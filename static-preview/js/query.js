@@ -22,9 +22,33 @@ if (toggleFilter && filterContent) {
     toggleFilter.addEventListener('click', function() {
         const isHidden = filterContent.style.display === 'none';
         filterContent.style.display = isHidden ? 'block' : 'none';
-        this.textContent = isHidden ? '收起' : '展开';
+        const arrow = this.querySelector('.arrow');
+        if (arrow) {
+            arrow.textContent = isHidden ? '▲' : '▼';
+        }
+        this.classList.toggle('active', !isHidden);
     });
 }
+
+// 快速筛选标签
+document.querySelectorAll('.filter-tag').forEach(tag => {
+    tag.addEventListener('click', function() {
+        document.querySelectorAll('.filter-tag').forEach(t => t.classList.remove('active'));
+        this.classList.add('active');
+        const filter = this.dataset.filter;
+        console.log('应用筛选:', filter);
+    });
+});
+
+// 视图切换
+document.querySelectorAll('.view-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+        document.querySelectorAll('.view-btn').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        const view = this.dataset.view;
+        console.log('切换到视图:', view);
+    });
+});
 
 // 搜索功能（示例）
 document.querySelectorAll('.search-btn, .search-btn-large').forEach(btn => {

@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>标准查询 - 标准AI立方</title>
+    <title>标准查询 - 标准数字化V1</title>
     <link rel="stylesheet" href="css/common.css">
     <link rel="stylesheet" href="css/query.css">
 </head>
@@ -12,7 +12,7 @@
     <header class="header">
         <div class="container">
             <div class="logo-section">
-                <div class="logo">标准AI立方</div>
+                <div class="logo">标准数字化V1</div>
                 <div class="tagline">智能标准化服务平台</div>
             </div>
             <nav class="main-nav">
@@ -49,11 +49,20 @@
                     </div>
                 </div>
 
+                <!-- 快速筛选标签 -->
+                <div class="quick-filters">
+                    <span class="filter-label">快速筛选：</span>
+                    <button class="filter-tag active" data-filter="all">全部</button>
+                    <button class="filter-tag" data-filter="current">现行</button>
+                    <button class="filter-tag" data-filter="revised">修订中</button>
+                    <button class="filter-tag" data-filter="recent">最近发布</button>
+                </div>
+
                 <!-- 高级筛选 -->
                 <div class="filter-section">
                     <div class="filter-header">
                         <span>高级筛选</span>
-                        <button class="toggle-filter">展开</button>
+                        <button class="toggle-filter">展开 <span class="arrow">▼</span></button>
                     </div>
                     <div class="filter-content" style="display: none;">
                         <div class="filter-row">
@@ -68,25 +77,63 @@
                             </div>
                             <div class="filter-item">
                                 <label>行业分类</label>
-                                <select class="filter-select">
+                                <select class="filter-select" id="industryFilter">
                                     <option value="">全部</option>
-                                    <option value="AQ">安全生产</option>
-                                    <option value="BB">包装</option>
+                                    <option value="AQ">安全生产 (AQ)</option>
+                                    <option value="BB">包装 (BB)</option>
+                                    <option value="XX">信息技术 (XX)</option>
+                                    <option value="YB">冶金 (YB)</option>
+                                    <option value="JC">建材 (JC)</option>
                                     <!-- 更多选项 -->
                                 </select>
                             </div>
                             <div class="filter-item">
-                                <label>发布日期</label>
-                                <input type="date" class="filter-input">
+                                <label>城市/省份</label>
+                                <select class="filter-select" id="cityFilter">
+                                    <option value="">全部</option>
+                                    <option value="北京">北京</option>
+                                    <option value="上海">上海</option>
+                                    <option value="广东">广东</option>
+                                    <option value="江苏">江苏</option>
+                                    <option value="浙江">浙江</option>
+                                    <!-- 更多选项 -->
+                                </select>
+                            </div>
+                            <div class="filter-item">
+                                <label>发布日期范围</label>
+                                <div class="date-range">
+                                    <input type="date" class="filter-input date-input" placeholder="开始日期">
+                                    <span>至</span>
+                                    <input type="date" class="filter-input date-input" placeholder="结束日期">
+                                </div>
+                            </div>
+                        </div>
+                        <div class="filter-row">
+                            <div class="filter-item">
+                                <label>实施日期范围</label>
+                                <div class="date-range">
+                                    <input type="date" class="filter-input date-input" placeholder="开始日期">
+                                    <span>至</span>
+                                    <input type="date" class="filter-input date-input" placeholder="结束日期">
+                                </div>
                             </div>
                             <div class="filter-item">
                                 <label>负责部门</label>
                                 <input type="text" class="filter-input" placeholder="请输入部门名称">
                             </div>
+                            <div class="filter-item">
+                                <label>中国标准分类号</label>
+                                <input type="text" class="filter-input" placeholder="如：L70">
+                            </div>
+                            <div class="filter-item">
+                                <label>国际标准分类号</label>
+                                <input type="text" class="filter-input" placeholder="如：35.240.01">
+                            </div>
                         </div>
                         <div class="filter-actions">
                             <button class="btn btn-primary">应用筛选</button>
                             <button class="btn btn-secondary">重置</button>
+                            <button class="btn btn-secondary">保存筛选条件</button>
                         </div>
                     </div>
                 </div>
@@ -94,15 +141,27 @@
                 <!-- 查询结果 -->
                 <div class="results-section">
                     <div class="results-header">
-                        <div class="results-count">找到 <strong>1,234</strong> 条结果</div>
-                        <div class="results-sort">
-                            <label>排序：</label>
-                            <select class="sort-select">
-                                <option value="relevance">相关度</option>
-                                <option value="date-desc">发布日期（最新）</option>
-                                <option value="date-asc">发布日期（最早）</option>
-                                <option value="code">标准号</option>
-                            </select>
+                        <div class="results-count">
+                            找到 <strong>1,234</strong> 条结果
+                            <span class="result-tip">（行业标准：856条，地方标准：378条）</span>
+                        </div>
+                        <div class="results-actions">
+                            <div class="view-toggle">
+                                <button class="view-btn active" data-view="list" title="列表视图">☰</button>
+                                <button class="view-btn" data-view="card" title="卡片视图">⊞</button>
+                            </div>
+                            <div class="results-sort">
+                                <label>排序：</label>
+                                <select class="sort-select">
+                                    <option value="relevance">相关度</option>
+                                    <option value="date-desc">发布日期（最新）</option>
+                                    <option value="date-asc">发布日期（最早）</option>
+                                    <option value="code">标准号</option>
+                                    <option value="name">标准名称</option>
+                                </select>
+                            </div>
+                            <button class="btn btn-secondary btn-sm">批量操作</button>
+                            <button class="btn btn-secondary btn-sm">导出结果</button>
                         </div>
                     </div>
 
@@ -179,7 +238,7 @@
             <div class="footer-content">
                 <div class="footer-section">
                     <h4>关于我们</h4>
-                    <p>标准AI立方是一个基于AI技术的智能标准化服务平台</p>
+                    <p>标准数字化V1是一个基于AI技术的智能标准化服务平台</p>
                 </div>
                 <div class="footer-section">
                     <h4>快速链接</h4>
@@ -194,7 +253,7 @@
                 </div>
             </div>
             <div class="footer-bottom">
-                <p>&copy; 2025 标准AI立方. All rights reserved.</p>
+                <p>&copy; 2025 标准数字化V1. All rights reserved.</p>
             </div>
         </div>
     </footer>
