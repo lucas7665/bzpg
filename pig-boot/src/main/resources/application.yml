@@ -53,6 +53,8 @@ security:
         - /admin/evaluation/**  # 标准评估模块无需登录（带context-path）
         - /local-standard/**  # 地方标准查询模块无需登录
         - /admin/local-standard/**  # 地方标准查询模块无需登录（带context-path）
+        - /industry-standard/**  # 行业标准查询模块无需登录
+        - /admin/industry-standard/**  # 行业标准查询模块无需登录（带context-path）
 
 #--------------如下配置尽量不要变动-------------
 # swagger 配置
