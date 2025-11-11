@@ -1,6 +1,10 @@
 package com.pig4cloud.pig.admin.service;
 
+import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
+import com.pig4cloud.pig.admin.dto.FilterOptionsDTO;
+import com.pig4cloud.pig.admin.dto.LocalStandardQueryDTO;
+import com.pig4cloud.pig.admin.dto.LocalStandardQueryResponseDTO;
 import com.pig4cloud.pig.admin.entity.LocalStandardDetail;
 
 import java.util.List;
@@ -40,6 +44,20 @@ public interface LocalStandardQueryService extends IService<LocalStandardDetail>
      * @return 统计信息
      */
     ProvinceStandardStats getProvinceStandardStats(String provinceName);
+
+    /**
+     * 分页查询地方标准
+     * @param page 分页参数
+     * @param queryDTO 查询条件
+     * @return 分页查询结果
+     */
+    LocalStandardQueryResponseDTO queryLocalStandards(Page<LocalStandardDetail> page, LocalStandardQueryDTO queryDTO);
+
+    /**
+     * 获取筛选条件选项
+     * @return 筛选条件选项
+     */
+    FilterOptionsDTO getFilterOptions();
 
     /**
      * 省份标准统计信息
