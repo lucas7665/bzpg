@@ -1,8 +1,8 @@
 {
   "openapi": "3.0.1",
   "info": {
-    "title": "标准评估模块 API",
-    "description": "标准评估模块相关接口文档",
+    "title": "Pig API 文档",
+    "description": "标准评估模块和地方标准查询模块相关接口文档",
     "version": "1.0.0"
   },
   "servers": [
@@ -15,6 +15,10 @@
     {
       "name": "标准评估模块",
       "description": "标准评估相关接口"
+    },
+    {
+      "name": "地方标准查询",
+      "description": "地方标准查询相关接口"
     }
   ],
   "paths": {
@@ -191,6 +195,152 @@
           }
         }
       }
+    },
+    "/local-standard/query": {
+      "get": {
+        "tags": ["地方标准查询"],
+        "summary": "分页查询地方标准",
+        "description": "支持关键词、省市区、备案日期、状态等条件筛选",
+        "operationId": "queryLocalStandards",
+        "parameters": [
+          {
+            "name": "current",
+            "in": "query",
+            "description": "当前页码，从1开始",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 1,
+              "example": 1
+            }
+          },
+          {
+            "name": "size",
+            "in": "query",
+            "description": "每页大小",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 10,
+              "example": 10
+            }
+          },
+          {
+            "name": "keyword",
+            "in": "query",
+            "description": "关键词（标准号或标准名称，模糊查询）",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "标准"
+            }
+          },
+          {
+            "name": "cityCode",
+            "in": "query",
+            "description": "城市代码（省市区筛选，单选）",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "bjzjj"
+            }
+          },
+          {
+            "name": "recordDateType",
+            "in": "query",
+            "description": "备案日期类型：LAST_MONTH(近一月)、LAST_THREE_MONTHS(近三月)、LAST_HALF_YEAR(近半年)、LAST_YEAR(近一年)、LAST_TWO_YEARS(近两年)、LAST_THREE_YEARS(近三年)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["LAST_MONTH", "LAST_THREE_MONTHS", "LAST_HALF_YEAR", "LAST_YEAR", "LAST_TWO_YEARS", "LAST_THREE_YEARS"],
+              "example": "LAST_YEAR"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "标准状态：现行、废止",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["现行", "废止"],
+              "example": "现行"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "查询成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseLocalStandardQueryResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "请求参数错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器内部错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Authorization": []
+          }
+        ]
+      }
+    },
+    "/local-standard/filter-options": {
+      "get": {
+        "tags": ["地方标准查询"],
+        "summary": "获取筛选条件选项",
+        "description": "获取省份列表、状态选项、备案日期选项等筛选条件",
+        "operationId": "getFilterOptions",
+        "responses": {
+          "200": {
+            "description": "获取成功",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ResponseFilterOptions"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "服务器内部错误",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "Authorization": []
+          }
+        ]
+      }
     }
   },
   "components": {
@@ -289,6 +439,209 @@
           }
         }
       },
+      "LocalStandardRecord": {
+        "type": "object",
+        "properties": {
+          "pk": {
+            "type": "string",
+            "description": "唯一标识",
+            "example": "123456"
+          },
+          "code": {
+            "type": "string",
+            "description": "标准号",
+            "example": "DB11/T 1234-2023"
+          },
+          "chName": {
+            "type": "string",
+            "description": "标准名称",
+            "example": "地方标准示例"
+          },
+          "city": {
+            "type": "string",
+            "description": "省市区",
+            "example": "北京市"
+          },
+          "status": {
+            "type": "string",
+            "description": "状态（现行、废止）",
+            "example": "现行"
+          },
+          "issueDate": {
+            "type": "integer",
+            "format": "int64",
+            "description": "批准日期（时间戳）",
+            "example": 1672531200000
+          },
+          "actDate": {
+            "type": "integer",
+            "format": "int64",
+            "description": "实施日期（时间戳）",
+            "example": 1675209600000
+          },
+          "recordNo": {
+            "type": "string",
+            "description": "备案号",
+            "example": "备案号123"
+          },
+          "recordDate": {
+            "type": "integer",
+            "format": "int64",
+            "description": "备案日期（时间戳）",
+            "example": 1672531200000
+          }
+        }
+      },
+      "LocalStandardQueryResponse": {
+        "type": "object",
+        "properties": {
+          "records": {
+            "type": "array",
+            "description": "记录列表",
+            "items": {
+              "$ref": "#/components/schemas/LocalStandardRecord"
+            }
+          },
+          "total": {
+            "type": "integer",
+            "format": "int64",
+            "description": "总记录数",
+            "example": 100
+          },
+          "size": {
+            "type": "integer",
+            "format": "int64",
+            "description": "每页大小",
+            "example": 10
+          },
+          "current": {
+            "type": "integer",
+            "format": "int64",
+            "description": "当前页",
+            "example": 1
+          },
+          "pages": {
+            "type": "integer",
+            "format": "int64",
+            "description": "总页数",
+            "example": 10
+          }
+        }
+      },
+      "ProvinceOption": {
+        "type": "object",
+        "properties": {
+          "cityCode": {
+            "type": "string",
+            "description": "城市代码",
+            "example": "bjzjj"
+          },
+          "cityName": {
+            "type": "string",
+            "description": "城市名称（如：北京市）",
+            "example": "北京市"
+          },
+          "standardCount": {
+            "type": "integer",
+            "description": "该省份下的标准数量",
+            "example": 150
+          }
+        }
+      },
+      "StatusOption": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "description": "状态值",
+            "example": "现行"
+          },
+          "label": {
+            "type": "string",
+            "description": "状态标签",
+            "example": "现行"
+          }
+        }
+      },
+      "RecordDateOption": {
+        "type": "object",
+        "properties": {
+          "value": {
+            "type": "string",
+            "description": "日期类型值",
+            "example": "LAST_YEAR"
+          },
+          "label": {
+            "type": "string",
+            "description": "日期类型标签",
+            "example": "近一年"
+          }
+        }
+      },
+      "FilterOptions": {
+        "type": "object",
+        "properties": {
+          "provinces": {
+            "type": "array",
+            "description": "省份列表（带数量统计）",
+            "items": {
+              "$ref": "#/components/schemas/ProvinceOption"
+            }
+          },
+          "statusOptions": {
+            "type": "array",
+            "description": "标准状态选项",
+            "items": {
+              "$ref": "#/components/schemas/StatusOption"
+            }
+          },
+          "recordDateOptions": {
+            "type": "array",
+            "description": "备案日期选项",
+            "items": {
+              "$ref": "#/components/schemas/RecordDateOption"
+            }
+          }
+        }
+      },
+      "ResponseLocalStandardQueryResponse": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "响应码，0表示成功",
+            "example": 0
+          },
+          "msg": {
+            "type": "string",
+            "description": "响应消息",
+            "nullable": true,
+            "example": "操作成功"
+          },
+          "data": {
+            "$ref": "#/components/schemas/LocalStandardQueryResponse"
+          }
+        }
+      },
+      "ResponseFilterOptions": {
+        "type": "object",
+        "properties": {
+          "code": {
+            "type": "integer",
+            "description": "响应码，0表示成功",
+            "example": 0
+          },
+          "msg": {
+            "type": "string",
+            "description": "响应消息",
+            "nullable": true,
+            "example": "操作成功"
+          },
+          "data": {
+            "$ref": "#/components/schemas/FilterOptions"
+          }
+        }
+      },
       "ErrorResponse": {
         "type": "object",
         "properties": {
@@ -300,7 +653,7 @@
           "msg": {
             "type": "string",
             "description": "错误消息",
-            "example": "模型切换失败：不支持的模型: gpt4"
+            "example": "操作失败"
           },
           "data": {
             "type": "object",
@@ -308,6 +661,14 @@
             "nullable": true
           }
         }
+      }
+    },
+    "securitySchemes": {
+      "Authorization": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Bearer Token认证，格式：Bearer {token}"
       }
     }
   }
