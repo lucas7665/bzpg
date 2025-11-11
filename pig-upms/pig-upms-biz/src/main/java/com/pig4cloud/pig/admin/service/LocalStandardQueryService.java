@@ -3,6 +3,7 @@ package com.pig4cloud.pig.admin.service;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.pig4cloud.pig.admin.dto.FilterOptionsDTO;
+import com.pig4cloud.pig.admin.dto.LocalStandardDetailResponseDTO;
 import com.pig4cloud.pig.admin.dto.LocalStandardQueryDTO;
 import com.pig4cloud.pig.admin.dto.LocalStandardQueryResponseDTO;
 import com.pig4cloud.pig.admin.entity.LocalStandardDetail;
@@ -58,6 +59,14 @@ public interface LocalStandardQueryService extends IService<LocalStandardDetail>
      * @return 筛选条件选项
      */
     FilterOptionsDTO getFilterOptions();
+
+    /**
+     * 根据pk或code获取标准详情
+     * @param pk 标准唯一标识（优先使用）
+     * @param code 标准号（pk为空时使用）
+     * @return 标准详情
+     */
+    LocalStandardDetailResponseDTO getStandardDetail(String pk, String code);
 
     /**
      * 省份标准统计信息

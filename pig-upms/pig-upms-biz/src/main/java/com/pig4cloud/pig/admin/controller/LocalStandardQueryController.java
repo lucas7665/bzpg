@@ -16,8 +16,10 @@
 
 package com.pig4cloud.pig.admin.controller;
 
+import cn.hutool.core.util.StrUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.pig4cloud.pig.admin.dto.FilterOptionsDTO;
+import com.pig4cloud.pig.admin.dto.LocalStandardDetailResponseDTO;
 import com.pig4cloud.pig.admin.dto.LocalStandardQueryDTO;
 import com.pig4cloud.pig.admin.dto.LocalStandardQueryResponseDTO;
 import com.pig4cloud.pig.admin.entity.LocalStandardDetail;
@@ -32,6 +34,7 @@ import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.http.HttpHeaders;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 /**
@@ -84,6 +87,35 @@ public class LocalStandardQueryController {
 		} catch (Exception e) {
 			log.error("获取筛选条件选项失败", e);
 			return R.failed("获取筛选条件选项失败: " + e.getMessage());
+		}
+	}
+
+	/**
+	 * 获取标准详情
+	 * @param pk 标准唯一标识（可选）
+	 * @param code 标准号（可选）
+	 * @return 标准详情
+	 */
+	@GetMapping("/detail")
+	@Operation(summary = "获取标准详情", description = "根据pk或code获取标准的详细信息")
+	public R<LocalStandardDetailResponseDTO> getStandardDetail(
+			@RequestParam(required = false) String pk,
+			@RequestParam(required = false) String code) {
+		log.info("收到标准详情查询请求，pk: {}, code: {}", pk, code);
+		try {
+			// 参数校验
+			if (StrUtil.isBlank(pk) && StrUtil.isBlank(code)) {
+				return R.failed("pk和code至少提供一个");
+			}
+
+			LocalStandardDetailResponseDTO detail = localStandardQueryService.getStandardDetail(pk, code);
+			if (detail == null) {
+				return R.failed("标准不存在");
+			}
+			return R.ok(detail);
+		} catch (Exception e) {
+			log.error("查询标准详情失败", e);
+			return R.failed("查询失败: " + e.getMessage());
 		}
 	}
 
